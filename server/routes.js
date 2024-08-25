@@ -1,6 +1,7 @@
 const {Router} = require("express");
+const { testApi } = require("./Controllers/userController");
 const router = Router();
 
-router.get("/", (req, res) => {res.send("Hello Worlds")});
+router.get("/", testApi);
 
 module.exports = router;

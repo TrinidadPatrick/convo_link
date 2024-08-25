@@ -15,6 +15,12 @@ app.use(cookieParser());
 
 app.use("/api", Route);
 
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+  console.log("MongoDB connected");
+}).catch((err) => {
+  console.log("Error connecting to MongoDB", err);
+});
+
 server.listen(process.env.PORT, () => {
   console.log("Server is running on port " + process.env.PORT);
 });
