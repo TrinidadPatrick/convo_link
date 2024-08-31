@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import UserLayout from "./UserLayout/UserLayout";
 import GuestLayout from "./GuestLayout/GuestLayout";
 import SignupForm from "./Components/Signup/SignupForm";
+import SignupEmailVerification from "./Components/Signup/SignupEmailVerification";
 
 const router : any = createBrowserRouter([
   {
@@ -33,6 +34,10 @@ const router : any = createBrowserRouter([
       {
         path: "/signup",
         element: <SignupForm />
+      },
+      {
+        path: "/verifyEmail/:email",
+        element: <SignupEmailVerification />
       },
     ],
   }

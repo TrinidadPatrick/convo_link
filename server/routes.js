@@ -1,7 +1,9 @@
 const {Router} = require("express");
-const { testApi } = require("./Controllers/userController");
+const { createUser, verifyOTP, resendOtp } = require("./Controllers/userController");
 const router = Router();
 
-router.get("/", testApi);
+router.post("/createUser", createUser);
+router.post("/verifyOtp", verifyOTP);
+router.post("/resendOtp", resendOtp);
 
 module.exports = router;

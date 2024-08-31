@@ -26,16 +26,18 @@ const userSchema = new mongoose.Schema({
     },
     contact : {
         type : String,
-        required : true,
         unique : true
     },
-    birthDate : {
+    birthdate : {
         type : Object,
         required : true, 
     },
-    profileImage : {
+    gender : {
         type : String,
         required : true
+    },
+    profileImage : {
+        type : String,
     },
     Address : {
         type : Object,
@@ -65,6 +67,18 @@ const userSchema = new mongoose.Schema({
     isDeactivated : {
         type : Boolean,
         default : false
+    },
+    email_verified : {
+        type : Boolean,
+        default : false
+    },
+    otp : {
+        type : String,
+        required : true
+    },
+    otpExpiry : {
+        type : Date,
+        required : true
     }
 });
 
