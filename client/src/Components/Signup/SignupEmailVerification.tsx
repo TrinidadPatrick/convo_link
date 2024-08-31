@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import guestBG from '../../utilities/images/Guest_bg.jpg'
 import { useParams } from 'react-router-dom'
 import emailIcon from '../../utilities/images/email-verification-icon.png'
