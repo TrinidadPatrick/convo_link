@@ -13,6 +13,13 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cookieParser());
 
+const myLogger = function (req, res, next) {
+  // console.log(req)
+  next()
+}
+
+app.use(myLogger)
+
 app.use("/api", Route);
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
