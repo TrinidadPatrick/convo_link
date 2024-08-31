@@ -10,7 +10,7 @@ const SignupForm = () => {
   const years = Array.from(Array(100).keys()).map(i => new Date().getFullYear() - i)
 
   return (
-    <div  className='relative w-full h-screen  flex flex-col justify-center items-center'>
+    <div  className='relative w-full h-[100svh]  flex flex-col justify-center items-center'>
         {/* Main Card */}
         <div className='w-full xs:w-[400px] h-fit bg-white rounded-lg xs:shadow-md flex flex-col justify-start items-center p-5 gap-3'>
             <img src={Logo} alt="logo" className=' w-56 object-contain' />
