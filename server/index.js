@@ -20,16 +20,7 @@ const myLogger = function (req, res, next) {
 
 app.use(myLogger)
 
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
-
-// Handle preflight requests
-app.options('*', cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
 
 app.use("/api", Route);
 
