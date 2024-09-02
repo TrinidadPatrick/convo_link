@@ -21,10 +21,9 @@ const myLogger = function (req, res, next) {
 app.use(myLogger)
 
 app.use(cors({
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers'],
+  origin: 'http://localhost:3000',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  origin: '*',
+  allowedHeaders : "*",
 }));
 
 app.use("/api", Route);
