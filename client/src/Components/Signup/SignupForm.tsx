@@ -36,7 +36,7 @@ const SignupForm = () => {
 
    try {
     setIsLoading(true)
-    const result = await http.post('/createUser', data, {withCredentials: true})
+    const result = await http.post('/createUser', data)
     console.log(result.data)
     navigate('/verifyEmail/' + email)
    } catch (error : any) {
