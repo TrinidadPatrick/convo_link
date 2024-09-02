@@ -20,7 +20,12 @@ const myLogger = function (req, res, next) {
 
 app.use(myLogger)
 
-app.use(cors());
+app.use(cors({
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  origin: '*',
+}));
 
 app.use("/api", Route);
 
