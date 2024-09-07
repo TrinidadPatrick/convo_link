@@ -21,7 +21,7 @@ const SigninForm = () => {
             password
            }
         // Entry validation
-        Object.entries(data).map(([key, value]) => {
+        Object.entries(data).map(([value]) => {
             if(value == '')
             {
               setError('Please fill all the fields')
@@ -30,7 +30,7 @@ const SigninForm = () => {
             
         })
         try {
-            const result = await http.post('login', data, {withCredentials: true})
+            const result : any = await http.post('login', data, {withCredentials: true})
             console.log(result.data)
         } catch (error : any) {
             if(error.status == 401)
