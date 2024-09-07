@@ -10,21 +10,20 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-app.use(express.json());
-app.use(cookieParser());
+// const myLogger = function (req, res, next) {
+//   // console.log(req)
+//   next()
+// }
 
-const myLogger = function (req, res, next) {
-  // console.log(req)
-  next()
-}
-
-app.use(myLogger)
+// app.use(myLogger)
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://convo-wave.vercel.app'],
   credentials: true,
-  allowedHeaders : "*",
 }));
+
+app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api", Route);
 
