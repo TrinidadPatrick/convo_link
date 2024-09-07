@@ -24,10 +24,6 @@ const userSchema = new mongoose.Schema({
         trim: true
         
     },
-    contact : {
-        type : String,
-        unique : true
-    },
     birthdate : {
         type : Object,
         required : true, 
