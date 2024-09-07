@@ -35,7 +35,7 @@ const SignupForm = () => {
     gender,
     password
    }
-   Object.entries(data).map(([key, value]) => {
+   Object.entries(data).map(([value]) => {
     if(value == '')
     {
       setError('Please fill all the fields')
