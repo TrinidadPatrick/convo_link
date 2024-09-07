@@ -3,18 +3,12 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const http = require("http");
-const dotenv = require("dotenv");
 const Route = require("./routes");
+const middleware = require("./middleware");
 
 const app = express();
 const server = http.createServer(app);
 
-// const myLogger = function (req, res, next) {
-//   // console.log(req)
-//   next()
-// }
-
-// app.use(myLogger)
 
 app.use(cors({
   origin: ['http://localhost:3000', 'https://convo-wave.vercel.app'],
@@ -25,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 require("dotenv").config();
 
-app.use("/api", Route);
+app.use("/api",middleware, Route);
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
   console.log("MongoDB connected");

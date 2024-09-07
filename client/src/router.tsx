@@ -3,6 +3,7 @@ import UserLayout from "./UserLayout/UserLayout";
 import GuestLayout from "./GuestLayout/GuestLayout";
 import SignupForm from "./Components/Signup/SignupForm";
 import SignupEmailVerification from "./Components/Signup/SignupEmailVerification";
+import SigninForm from "./Components/Signin/SigninForm";
 
 const router : any = createBrowserRouter([
   {
@@ -11,7 +12,7 @@ const router : any = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <SignupForm />
+        element: <div>Homes</div>
       },
       {
         path: "/about",
@@ -29,7 +30,7 @@ const router : any = createBrowserRouter([
     children: [
       {
         path: "/signin",
-        element: <div>Login</div>
+        element: <SigninForm />
       },
       {
         path: "/signup",

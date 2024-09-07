@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import guestBG from '../../utilities/images/Guest_bg.jpg'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import emailIcon from '../../utilities/images/email-verification-icon.png'
 import http from '../../../http'
 import Loader from '../../ReusableComponents/Loader'
 
 const SignupEmailVerification = () => {
+    const navigate = useNavigate()
     const {email} = useParams()
     const [otp, setOtp] = useState<string>('')
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -22,6 +23,9 @@ const SignupEmailVerification = () => {
         try {
             const result = await http.post('/verifyOtp', data, {withCredentials: true})
             setSuccess(result.data.message)
+            setTimeout(() => {
+                navigate('/signin')
+            }, 2000)
         } catch (error : any) {
             setError(error.response.data.message)
         } finally {

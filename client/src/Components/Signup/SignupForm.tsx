@@ -23,6 +23,8 @@ const SignupForm = () => {
   const [gender, setGender] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const [showPassword, setShowPassword] = useState<boolean>(false)
 
   const handleSubmit = async () => {
    const data = {
@@ -33,14 +35,23 @@ const SignupForm = () => {
     gender,
     password
    }
-
+   Object.entries(data).map(([key, value]) => {
+    if(value == '')
+    {
+      setError('Please fill all the fields')
+      return
+    }
+   })
    try {
     setIsLoading(true)
     const result = await http.post('createUser', data, {withCredentials: true})
     console.log(result.data)
     navigate('/verifyEmail/' + email)
    } catch (error : any) {
-    console.log(error)
+    if(error.status == 400)
+    {
+      setError(error.response.data.message)
+    }
    } finally {
     setIsLoading(false)
    }
@@ -67,7 +78,13 @@ const SignupForm = () => {
             </div>
 
             {/* Input Fields */}
-            <div className='flex flex-col gap-4 w-full mt-5'>
+            <div className={`flex flex-col gap-3 w-full ${error ? 'mt-0' : 'mt-5'}`}>
+            {
+                error && 
+                <div className='w-full bg-red-200 border p-2 border-red-500 rounded'>
+                    <p className='text-sm text-center text-red-500'>{error}</p>
+                </div>
+            }
                 {/* Firstname and lastname */}
                 <div className='w-full flex gap-3'>
                     {/* Firstname */}
@@ -94,7 +111,12 @@ const SignupForm = () => {
                     {/* Password */}
                     <div className='flex relative w-full'>
                     <span className="icon-[formkit--password] text-lg absolute top-[0.6rem] left-2 text-theme_normal"></span>
-                    <input onChange={(e : any)=>setPassword(e.target.value)} type='password' placeholder='Password' className='w-full h-9 rounded-md border-2 border-theme_semilight ps-8 pe-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
+                    <button onClick={()=>setShowPassword(!showPassword)} className='flex absolute right-2 top-2 items-center justify-center '>
+                        {
+                            showPassword ? <span className="icon-[fluent--eye-28-filled] text-xl text-theme_normal"></span> : <span className="icon-[fluent--eye-off-16-filled]  text-xl text-theme_normal"></span>
+                        }
+                    </button>
+                    <input onChange={(e : any)=>setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} placeholder='Password' className='w-full h-9 rounded-md border-2 border-theme_semilight ps-8 pe-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
                     </div>
                 </div>
                 {/* Birtdate */}
@@ -150,7 +172,7 @@ const SignupForm = () => {
                 </div>
                 {/* Already have an account? */}
                 <div className='flex w-full justify-center'>
-                  <p className='text-xs font-normal text-gray-600'>Already have an account? <button onClick={()=>navigate('signin')} className='text-theme_semidark cursor-pointer'>Sign in</button></p>
+                  <p className='text-xs font-normal text-gray-600'>Already have an account? <button onClick={()=>navigate('/signin')} className='text-theme_semidark cursor-pointer'>Sign in</button></p>
                 </div>
             </div>
             

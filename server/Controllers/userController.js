@@ -1,6 +1,8 @@
 const User = require("../Models/userModel");
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 
 const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -61,12 +63,70 @@ module.exports.createUser = async (req, res) => {
   }
 
   // If user is not in the database
-  await sendOTPEmail(email, otp);
-  await User.create({email : email.toLowerCase(), password, firstname, lastname, birthdate, gender, otp, otpExpiry});
-  return res.status(200).json({ message: 'OTP sent to your email' });
+  // Entry validation
+  Object.entries(data).map(([key, value]) => {
+    if(value == '')
+    {
+      return res.status(400).json({ message: 'Please fill all the fields' });
+    }
+    
+  })
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const response = await sendOTPEmail(email, otp);
+    await User.create({email : email.toLowerCase(), password : hashedPassword, firstname, lastname, birthdate, gender, otp, otpExpiry});
+    return res.status(200).json({ message: response });
+  } catch (error) {
+    if(error.message == 'No recipients defined' )
+    {
+      return res.status(400).json({ message: 'Invalid email' });
+    }
+  }
+  
 
 
 };
+
+module.exports.login = async (req,res) => {
+  const data = req.body;
+  const {email, password} = data;
+
+  const user = await User.findOne({email: email.toLowerCase()});
+
+  // If user is not in the database
+  if(!user)
+  {
+    return res.status(401).json({ message: 'Invalid email or password' });
+  }
+
+  // If user is in the database
+  else if(user)
+  {
+    // check if password is correct
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    // If user is in the database but not verified
+    if(isPasswordCorrect && !user.email_verified)
+    {
+      const otp = generateOTP();
+      const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+      await sendOTPEmail(email, otp);
+      await User.findByIdAndUpdate(user._id, {otp: otp, otpExpiry: otpExpiry});
+      return res.status(403).json({ message: 'User not verified' });
+    }
+    // If user is in the database and verified
+    if(user.email_verified && isPasswordCorrect)
+    {
+        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30d'});
+        res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+        return res.status(200).json({ message: 'Logged in successfully', token });
+    }
+    // If password is incorrect
+    if(!isPasswordCorrect)
+    {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+  }
+}
 
 module.exports.verifyOTP = async (req, res) => {
   const data = req.body;
@@ -100,5 +160,18 @@ module.exports.verifyOTP = async (req, res) => {
        return res.status(400).json({ message: 'Invalid OTP' });
      }
     }
+  }
+}
+
+module.exports.getUserProfile = async (req,res) => {
+  const user_id = req.user._id;
+  if(user_id)
+  {
+    const user = await User.findById(user_id, {password : 0});
+    const {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status} = user;
+    return res.status(200).json({ message: 'User profile fetched', user : {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status} });
+  }
+  else{
+    return res.status(400).json({ message: 'User not found' });
   }
 }
