@@ -11,7 +11,7 @@ const router : any = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <div>Homes</div>
+        element: <SignupForm />
       },
       {
         path: "/about",
