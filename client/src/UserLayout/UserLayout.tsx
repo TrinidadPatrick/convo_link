@@ -1,22 +1,18 @@
 import { useEffect } from "react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
 import http from "../../http"
+import { useAuthContext } from "../Auth/AuthProvider"
 
 
 const UserLayout = () => {
-
-  const getUser = async () => {
-    try {
-      const result = await http.get('getUserProfile', {withCredentials: true})
-    console.log(result.data)
-    } catch (error) {
-      console.log(error)
-    }
-    
+  const navigate = useNavigate()
+  const {user, isAuthenticated} = useAuthContext()
+  console.log(user)
+  if(!user || !isAuthenticated)
+  {
+    navigate('/signin')
   }
-  useEffect(() => {
-    getUser()
-  }, [])
+  
   return (
     <>
     <Outlet />

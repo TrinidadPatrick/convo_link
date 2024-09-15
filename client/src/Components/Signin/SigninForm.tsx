@@ -31,7 +31,10 @@ const SigninForm = () => {
         })
         try {
             const result : any = await http.post('login', data, {withCredentials: true})
-            console.log(result.data)
+            if(result.status == 200)
+            {
+                navigate('/')
+            }
         } catch (error : any) {
             if(error.status == 401)
             {
@@ -50,8 +53,8 @@ const SigninForm = () => {
   return (
     <div  className='relative w-full h-[100svh]  flex flex-col justify-center items-center'>
 
-            {/* Main Card */}
-            <div className='w-full xs:w-[350px] h-fit bg-white rounded-lg xs:shadow-md flex flex-col justify-start items-center p-5 gap-3'>
+        {/* Main Card */}
+        <div className='w-full xs:w-[350px] h-fit bg-white rounded-lg xs:shadow-md flex flex-col justify-start items-center p-5 gap-3'>
             <img src={Logo} alt="logo" className=' w-56 object-contain' />
             {/* Buttons */}
             <div className='flex w-full justify-center'>

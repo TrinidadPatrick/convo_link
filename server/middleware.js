@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const publicRoutes = ['/login', '/signup', '/verifyEmail', '/verifyOtp', '/resendOtp']
+const publicRoutes = ['/login', '/signup', '/verifyEmail', '/verifyOtp', '/resendOtp', '/forgotPassword', '/verifyFpyOTP', '/resetPassword']
 const protectedRoutes = ['/getUserProfile']
 
 const middleware = (req, res, next) => {

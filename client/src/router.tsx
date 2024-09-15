@@ -4,6 +4,7 @@ import GuestLayout from "./GuestLayout/GuestLayout";
 import SignupForm from "./Components/Signup/SignupForm";
 import SignupEmailVerification from "./Components/Signup/SignupEmailVerification";
 import SigninForm from "./Components/Signin/SigninForm";
+import ForgotPassword from "./Components/ForgorPassword/ForgotPassword";
 
 const router : any = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router : any = createBrowserRouter([
       {
         path: "/verifyEmail/:email",
         element: <SignupEmailVerification />
+      },
+      {
+        path: "/forgotPassword",
+        element: <ForgotPassword />
       },
     ],
   }

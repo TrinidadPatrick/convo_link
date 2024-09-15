@@ -26,7 +26,81 @@ const sendOTPEmail = async (email, otp) => {
       from: 'Convo_wave_support@gmail.com',
       to: email,
       subject: 'Your OTP Code',
-      text: `Your OTP code is ${otp}. It will expire in 10 minutes.`,
+      html : `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Your OTP Code</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background-color: #f4f4f4;
+                  color: #333;
+                  margin: 0;
+                  padding: 0;
+              }
+              .container {
+                  width: 100%;
+                  max-width: 600px;
+                  margin: 20px auto;
+                  background-color: #ffffff;
+                  border-radius: 8px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  overflow: hidden;
+              }
+              .header {
+                  background-color: #007bff;
+                  color: #ffffff;
+                  padding: 20px;
+                  text-align: center;
+              }
+              .header h1 {
+                  margin: 0;
+                  font-size: 24px;
+              }
+              .content {
+                  padding: 20px;
+                  text-align: center;
+              }
+              .otp {
+                  font-size: 32px;
+                  font-weight: bold;
+                  color: #007bff;
+                  margin: 20px 0;
+              }
+              .footer {
+                  background-color: #f4f4f4;
+                  color: #666;
+                  padding: 10px;
+                  text-align: center;
+                  font-size: 14px;
+              }
+              .footer a {
+                  color: #007bff;
+                  text-decoration: none;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <h1>Your OTP Code</h1>
+              </div>
+              <div class="content">
+                  <p>Hello,</p>
+                  <p>Here is your One-Time Password (OTP) for verifying your account:</p>
+                  <div class="otp">
+                      ${otp}
+                  </div>
+                  <p>This OTP is valid for 10 minutes. Please use it to complete your verification process.</p>
+                  <p>If you did not request this OTP, please ignore this email.</p>
+              </div>
+          </div>
+      </body>
+      </html>
+  `
   };
 
   await transporter.sendMail(mailOptions);
@@ -159,6 +233,72 @@ module.exports.verifyOTP = async (req, res) => {
      {
        return res.status(400).json({ message: 'Invalid OTP' });
      }
+    }
+  }
+}
+
+module.exports.forgotPassword = async (req, res) => {
+  const data = req.body;
+  const {email} = data;
+
+  const existingUser = await findUserByEmail(email.toLowerCase());
+  // If user exists
+  if (existingUser) {
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+    await sendOTPEmail(email, otp);
+    await User.findByIdAndUpdate(existingUser._id, {otp: otp, otpExpiry: otpExpiry});
+    return res.status(200).json({ message: 'An OTP was sent to \n' + email });
+  }
+  return res.status(400).json({ message: 'Account not found' });
+}
+
+module.exports.verifFpyOTP = async (req, res) => {
+  const data = req.body;
+  const {otp, email} = data;
+
+  const user = await User.findOne({email: email.toLowerCase()});
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // if user is in the database
+  if(user)
+  {
+     if(user.otp === otp && user.otpExpiry > Date.now())
+     {
+       return res.status(200).json({ message: 'OTP verified' });
+     }
+     else
+     {
+       return res.status(401).json({ message: 'Invalid OTP' });
+     }
+    }
+}
+
+module.exports.resetPassword = async (req, res) => {
+  const data = req.body;
+  const {email, password, otp} = data;
+
+  const user = await User.findOne({email: email.toLowerCase()});
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+  if(user)
+  {
+    if(user.otp === otp && user.otpExpiry > Date.now())
+    {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await User.findByIdAndUpdate(user._id, {password : hashedPassword, otp : null, otpExpiry : null});
+      return res.status(200).json({ message: 'Password reset successfully' });
+    }
+    else
+    {
+      return res.status(401).json({ message: 'Invalid Credentials' });
     }
   }
 }
