@@ -108,7 +108,7 @@ const FriendRecommendations = () => {
                     <div key={index} className='px-2 py-5 border w-[200px] flex gap-3 overflow-hidden flex-col justify-center items-center'>
                         {/* Profile image */}
                         <div>
-                            <Userimage firstname={people?.firstname} lastname={people?.lastname} size={40} width={24} height={24} />
+                            <Userimage firstname={people?.firstname} lastname={people?.lastname} size={40} width={70} height={70} />
                         </div>
                         <div className='flex flex-col'>
                         <h1 className='text-[0.9rem] text-center font-medium text-gray-800 line-clamp-1'>{people.firstname} {people.lastname}</h1>
