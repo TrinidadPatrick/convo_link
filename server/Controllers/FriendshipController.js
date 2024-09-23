@@ -1,5 +1,5 @@
 const User = require("../Models/userModel");
-const Friendship = require("../Models/FriendshipModel");
+const Friendship = require("../Models/FriendShipModel");
 
 module.exports.getPeopleRecommendations = async (req,res) => {
     const friends = await User.find({_id : {$ne : req.user._id}}).select('_id firstname lastname profileImage userBio profile_status').limit(50);
