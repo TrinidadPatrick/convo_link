@@ -308,8 +308,8 @@ module.exports.getUserProfile = async (req,res) => {
   if(user_id)
   {
     const user = await User.findById(user_id, {password : 0});
-    const {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status} = user;
-    return res.status(200).json({ message: 'User profile fetched', user : {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status} });
+    const {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, _id} = user;
+    return res.status(200).json({ message: 'User profile fetched', user : {firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, _id} });
   }
   else{
     return res.status(400).json({ message: 'User not found' });

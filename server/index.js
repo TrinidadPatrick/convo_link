@@ -5,9 +5,11 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const Route = require("./routes");
 const middleware = require("./middleware");
+const socketConfig = require("./socket");
 
 const app = express();
 const server = http.createServer(app);
+const io = socketConfig(server);
 
 
 app.use(cors({

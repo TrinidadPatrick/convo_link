@@ -28,12 +28,17 @@ const userSchema = new mongoose.Schema({
         type : Object,
         required : true, 
     },
+    userBio : {
+        type : String,
+        default : null
+    },
     gender : {
         type : String,
         required : true
     },
     profileImage : {
         type : String,
+        default : null
     },
     Address : {
         type : Object,
@@ -45,8 +50,8 @@ const userSchema = new mongoose.Schema({
     },
     profile_status: {
         type: String,
-        enum: ['online', 'offline', 'away', 'busy'],
-        default: 'offline',
+        enum: ['Online', 'Offline', 'Away', 'Busy'],
+        default: 'Offline',
     },
     Role : {
         type : String,

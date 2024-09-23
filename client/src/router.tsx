@@ -5,6 +5,10 @@ import SignupForm from "./Components/Signup/SignupForm";
 import SignupEmailVerification from "./Components/Signup/SignupEmailVerification";
 import SigninForm from "./Components/Signin/SigninForm";
 import ForgotPassword from "./Components/ForgorPassword/ForgotPassword";
+import UserProfile from "./Views/UserProfileView/UserProfile";
+import FindFriends from "./Views/FriendLists/FriendLists";
+import FriendLists from "./Views/FriendLists/FriendLists";
+import Friends from "./Views/FriendLists/Friends";
 
 const router : any = createBrowserRouter([
   {
@@ -22,6 +26,14 @@ const router : any = createBrowserRouter([
       {
         path: "/contact",
         element: <div>Contact</div>
+      },
+      {
+        path: "/profile",
+        element: <UserProfile />
+      },
+      {
+        path: "/friendLists",
+        element: <Friends />
       },
     ],
   },

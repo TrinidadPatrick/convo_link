@@ -11,6 +11,7 @@ const GuestLayout = () => {
   }
   return (
    <>
+   {user}
    <Outlet  />
    </>
   )

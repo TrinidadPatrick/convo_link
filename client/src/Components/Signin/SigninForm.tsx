@@ -33,7 +33,9 @@ const SigninForm = () => {
             const result : any = await http.post('login', data, {withCredentials: true})
             if(result.status == 200)
             {
-                navigate('/')
+                setTimeout(() => {
+                    window.location.href = '/'
+                }, 1000);
             }
         } catch (error : any) {
             if(error.status == 401)
@@ -87,7 +89,7 @@ const SigninForm = () => {
                     </div>
                 </div>
                 {/* Password */}
-                <div className='w-full flex gap-3'>
+                <div className='w-full flex flex-col items-end'>
                     {/* Password */}
                     <div className='flex relative w-full'>
                     <span className="icon-[formkit--password] text-lg absolute top-[0.6rem] left-2 text-theme_normal"></span>
@@ -98,6 +100,8 @@ const SigninForm = () => {
                     </button>
                     <input onKeyDown={(e)=>{if(e.key == 'Enter'){ handleSubmit()}}} onChange={(e : any)=>setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} placeholder='Password' className='w-full h-9 rounded-md border-2 border-theme_semilight ps-8 pe-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
                     </div>
+
+                    <button className="text-xs mt-0.5 hover:text-gray-500" onClick={()=>{navigate('/forgotPassword')}}>Forgot password?</button>
                 </div>
                 {/* Submit button */}
                 <div className='flex w-full justify-center'>
