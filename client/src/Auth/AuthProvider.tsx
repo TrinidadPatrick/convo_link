@@ -59,7 +59,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     const initiateSocket = (user : UserType) => {
        if(!isSocketConnected)
        {
-        const socket : any = io('http://localhost:5000')
+        const socket : any = io(
+            // 'http://localhost:5000'
+            'https://convo-link.onrender.com/'
+            )
         isSocketConnected = true
         setSocket(socket)
         setProfileStatus({_id : user._id, status : 'Online'}, socket)
@@ -103,6 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         });
     }, [socket])
 
+    console.log(socket)
     
 
     return (
