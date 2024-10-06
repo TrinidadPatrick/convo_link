@@ -4,7 +4,11 @@ const publicRoutes = ['/login', '/signup', '/verifyEmail', '/verifyOtp', '/resen
 const protectedRoutes = ['/getUserProfile', '/getPeopleRecommendations', '/requestFriendship', '/getFriendships', '/respondFriendship']
 
 const middleware = (req, res, next) => {
-  const isProtectedRoutes = protectedRoutes.includes(req.url)
+
+  const isProtectedRoutes = protectedRoutes.some(route => {
+    const routeRegex = new RegExp(`^${route.replace(/:\w+/g, '\\w+')}$`);
+    return routeRegex.test(req.path);
+  });
   const isPublicRoutes = publicRoutes.includes(req.url)
   // If no cookie is present
   if(isPublicRoutes)

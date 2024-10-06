@@ -156,11 +156,11 @@ const SignupForm = () => {
                     </div>
                     <div className='cursor-pointer w-full justify-between px-3 py-2 flex rounded border-2 border-theme_semilight'>
                       <label className='text-xs' >Female</label>
-                      <input onChange={(e : any)=>{setBirthdate(e.target.value)}} type='radio' name='gender' value='Female' className='cursor-pointer rounded border-2 border-theme_semilight' />
+                      <input onChange={(e : any)=>{setGender(e.target.value)}} type='radio' name='gender' value='Female' className='cursor-pointer rounded border-2 border-theme_semilight' />
                     </div>
                     <div className='cursor-pointer w-full justify-between px-3 py-2 flex rounded border-2 border-theme_semilight'>
                       <label className='text-xs' >Others</label>
-                      <input onChange={(e : any)=>{setBirthdate(e.target.value)}} type='radio' name='gender' value='Others' className='cursor-pointer rounded border-2 border-theme_semilight' />
+                      <input onChange={(e : any)=>{setGender(e.target.value)}} type='radio' name='gender' value='Others' className='cursor-pointer rounded border-2 border-theme_semilight' />
                     </div>
                   </div>
                 </div>

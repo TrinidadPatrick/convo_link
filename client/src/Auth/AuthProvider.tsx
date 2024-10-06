@@ -72,7 +72,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         
        }
 
-        // return socket.disconnect()
     }
 
     const getUser = async () => {
@@ -106,7 +105,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         });
     }, [socket])
 
-    console.log(socket)
     
 
     return (

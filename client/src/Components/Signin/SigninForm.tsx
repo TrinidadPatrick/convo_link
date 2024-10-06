@@ -34,7 +34,7 @@ const SigninForm = () => {
             if(result.status == 200)
             {
                 setTimeout(() => {
-                    window.location.href = '/'
+                    window.location.href = '/friendLists'
                 }, 1000);
             }
         } catch (error : any) {

@@ -1,21 +1,40 @@
 const User = require("../Models/userModel");
-const Friendship = require("../Models/FriendShipModel");
+const Friendship = require("../Models/FriendshipModel");
 
 module.exports.getPeopleRecommendations = async (req,res) => {
-    const friends = await User.find({_id : {$ne : req.user._id}}).select('_id firstname lastname profileImage userBio profile_status').limit(50);
-    return res.status(200).json({ message: 'People recommendations fetched', friends });    
+    const searchValue = req.query.searchValue;
+    console.log(searchValue)
+    let peopleRecommendation;
+
+    if (!searchValue) {
+    // Fetch default recommendations (e.g., random users, popular users, etc.)
+    peopleRecommendation = await User.find({ _id: { $ne: req.user._id } })
+        .select('_id firstname lastname profileImage userBio profile_status')
+        .limit(50);
+    } else {
+    // Perform the search query
+    peopleRecommendation = await User.find({
+        _id: { $ne: req.user._id },
+        $or: [
+        { firstname: { $regex: searchValue, $options: 'i' } },
+        { lastname: { $regex: searchValue, $options: 'i' } }
+        ]
+    })
+    .select('_id firstname lastname profileImage userBio profile_status')
+    .limit(50);
+    }
+    return res.status(200).json({ message: 'People recommendations fetched', peopleRecommendation });    
 }
 
 module.exports.requestFriendship = async (req,res) => {
-    // User 2 is the initiator
-    // User 1 is the friend/requested friend
     const {userId} = req.body;
-    const friendShip = await Friendship.create({user1 : userId, user2 : req.user._id, initiator : req.user._id});
+    const friendShip = await Friendship.create({participants : [userId, req.user._id], initiator : req.user._id});
     return res.status(200).json({ message: 'Friendship request sent', friendShip });
 }
 
 module.exports.getFriendships = async (req,res) => {
-    const friendships = await Friendship.find({$or : [{user2 : req.user._id}, {user1 : req.user._id}]}).select('_id user2 user1 status initiator').limit(50);
+    const userId = req.user._id;
+    const friendships = await Friendship.find({participants : {$in : [userId]}}).select('_id participants status initiator').limit(50);
     return res.status(200).json({ message: 'Friendships fetched', friendships });
 }   
 
