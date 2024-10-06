@@ -1,9 +1,8 @@
 const User = require("../Models/userModel");
-const Friendship = require("../Models/FriendshipModel");
+const Friendship = require("../Models/FriendShipModel");
 
 module.exports.getPeopleRecommendations = async (req,res) => {
     const searchValue = req.query.searchValue;
-    console.log(searchValue)
     let peopleRecommendation;
 
     if (!searchValue) {
