@@ -303,6 +303,12 @@ module.exports.resetPassword = async (req, res) => {
   }
 }
 
+module.exports.logout = async (req, res) => {
+  const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn: '0ms'});
+  res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "None", secure: true});
+  return res.status(200).json({ message: 'Logged out successfully' });
+}
+
 module.exports.getUserProfile = async (req,res) => {
   const user_id = req.user._id;
   if(user_id)
