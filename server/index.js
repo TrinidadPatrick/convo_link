@@ -13,7 +13,7 @@ const io = socketConfig(server);
 
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://convo-wave.vercel.app'],
+  origin: ['http://localhost:3000', 'https://convo-wave.vercel.app', 'https://convo-link.onrender.com'],
   credentials: true,
 }));
 
