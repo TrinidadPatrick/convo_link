@@ -25,6 +25,101 @@ module.exports.getPeopleRecommendations = async (req,res) => {
     return res.status(200).json({ message: 'People recommendations fetched', peopleRecommendation });    
 }
 
+module.exports.getPeopleRecommendations_v2 = async (req, res) => {
+    const searchValue = req.query.searchValue;
+    let peopleRecommendation;
+
+    try {
+        // Fetch all friendships cuRrent user
+        const friendships = await Friendship.find({
+            $or: [
+                { participants: req.user._id }, // Friends
+                { initiator: req.user._id,  } // Sent requests
+            ]
+        });
+
+        // Extract ID of friends
+        const friendIds = friendships.flatMap(friendship => 
+            friendship.participants.filter(participant => 
+                participant.toString() !== req.user._id.toString() &&
+                friendship.status === 'accepted'
+            )
+        ).map(participant => participant._id.toString());
+
+        // Extract IDs of users who received requests from the current user
+        const sentRequestIds = friendships
+            .filter(friendship => friendship.initiator.toString() === req.user._id.toString() &&
+            friendship.status === 'pending')
+            .flatMap(friendship => 
+                friendship.participants.filter(participant => participant.toString() !== req.user._id.toString()) 
+            )
+            .map(participant => participant.toString());
+
+            // Extracts IDS of the users who sent requests to the current user
+            const acceptRequestIds = friendships
+            .filter(friendship => friendship.initiator.toString() !== req.user._id.toString() &&
+            friendship.status === 'pending')
+            .flatMap(friendship => 
+                friendship.participants.filter(participant => participant.toString() !== req.user._id.toString()) 
+            )
+            .map(participant => participant.toString());
+
+            const excludeIds = [...new Set([...friendIds, ...acceptRequestIds])];
+
+
+        // Fetch users who are not friends and who have received requests
+        if (!searchValue) {
+            result = await User.find({
+                _id: { $ne: req.user._id, $nin: excludeIds }
+                
+            }).select('_id firstname lastname profileImage userBio profile_status')
+            .limit(50);
+             peopleRecommendation = result.map((person)=> {
+                return {
+                    ...person.toObject(),
+                    hasSentRequest : sentRequestIds.includes(person._id.toString()),
+                }
+            })
+            
+        } else {
+            // Search query that respects the same criteria
+            result = await User.find({
+                _id: { $ne: req.user._id, $nin: excludeIds },
+                $or: [
+                    { firstname: { $regex: searchValue, $options: 'i' } },
+                    { lastname: { $regex: searchValue, $options: 'i' } }
+                ]
+            })
+            .select('_id firstname lastname profileImage userBio profile_status')
+            .limit(50);
+             peopleRecommendation = result.map((person)=> {
+                return {
+                    person,
+                    hasSentRequest : sentRequestIds.includes(person._id.toString()),
+                }
+            })
+        }
+
+        return res.status(200).json({ message: 'People recommendations fetched', peopleRecommendation  });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports.getFriendRequests = async (req, res) => {
+    try {
+        const friendRequests = await Friendship.find({
+            initiator : {$ne : req.user._id},
+            status : 'pending'
+        }).populate("initiator", "firstname lastname profileImage userBio profile_status")
+        .limit(50);
+        
+        return res.status(200).json({message: 'Friend requests fetched', friendRequests});
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports.requestFriendship = async (req,res) => {
     const {userId} = req.body;
     const friendShip = await Friendship.create({participants : [userId, req.user._id], initiator : req.user._id});

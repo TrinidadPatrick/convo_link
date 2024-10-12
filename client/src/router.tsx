@@ -9,6 +9,7 @@ import UserProfile from "./Views/UserProfileView/UserProfile";
 import FindFriends from "./Views/FriendLists/FriendLists";
 import FriendLists from "./Views/FriendLists/FriendLists";
 import Friends from "./Views/FriendLists/Friends";
+import FriendRecommendations from "./Views/FriendLists/FriendRecommendations";
 
 const router : any = createBrowserRouter([
   {
@@ -32,8 +33,8 @@ const router : any = createBrowserRouter([
         element: <UserProfile />
       },
       {
-        path: "/friendLists",
-        element: <Friends />
+        path: "/findPeople",
+        element: <FriendRecommendations />
       },
     ],
   },

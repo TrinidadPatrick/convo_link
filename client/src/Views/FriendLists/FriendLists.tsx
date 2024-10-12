@@ -33,7 +33,7 @@ const FriendLists = () => {
   const [searchValue, setSearchValue] = useState<string>('')
 
   return (
-    <div className='flex flex-col gap-3 p-5 bg-white shadow rounded h-full'>
+    <div className='flex flex-col gap-3 p-5 bg-white w-full shadow rounded h-full'>
       <div className='w-full'>
         <h1 className='text-xl font-medium text-gray-600'>Friends</h1>
       </div>
@@ -65,9 +65,9 @@ const FriendLists = () => {
           </button>
 
       </div>
-      <div className='flex gap-3 w-full h-full flex-wrap pt-1 '>
+      <div className='w-full h-full gap-3 flex overflow-scroll semiMd:grid semiMd:grid-cols-2 lg:grid-cols-3 justify-items-center pt-1'>
         {
-            FriendRecommendation?.filter((fr : People)=>Friendships?.some((friendship : Friendship)=>friendship.participants.includes(fr._id))).map((people : People, index : number) => {
+            FriendRecommendation?.filter((fr : People)=>Friendships?.some((friendship : Friendship)=>friendship.participants.includes(fr._id) && friendship.status == 'accepted')).map((people : People, index : number) => {
               
                 return (
                     <div key={index}  className='p-2 pb-2 border bg-white rounded-lg shadow w-full h-fit flex gap-3 overflow-hidden justify-between '>

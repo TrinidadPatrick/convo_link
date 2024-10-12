@@ -16,11 +16,18 @@ export default {
         'theme_dark': '#2d6a4f',
         'theme_ultradark': '#1b4332',
       },
-      
+      screens : {
+        semiMd : "850px",
+        Base : "720px",
+        semiBase : "610px",
+        semiSm : "510px",
+        xs : "400px"
+      }
     },
-    screens: {
-      'xs': '400px',
-    },
+    
+    // screens: {
+    //   'xs': '400px',
+    // },
   },
   plugins: [
     addDynamicIconSelectors(),

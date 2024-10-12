@@ -32,41 +32,17 @@ const Friends = () => {
     const {user} = useAuthContext()
     const {onlineUsers} = onlineUserStore()
 
-    const getRecommendations = async (searchValue : string) => {
-      console.log(searchValue)
-      try {
-        const result = await http.get('getPeopleRecommendations?searchValue=' + searchValue, {withCredentials: true})
-        setFriendRecommendation(result.data.peopleRecommendation)
-      } catch (error : any) {
-        console.log(error)
-      }
-    }
-  
-    const getFriendships = async () => {
-      try {
-        const result = await http.get('getFriendships', {withCredentials: true})
-        setFriendShips(result.data.friendships)
-      } catch (error : any) {
-        console.log(error)
-      }
-    }
-  
-    useEffect(() => {
-      getRecommendations('')
-      getFriendships()
-      return () => {
-      }
-    }, [])
-
   return (
-    <div className='flex gap-3 w-full h-full bg-[#f9f9f9] p-3'>
-        <div className='w-full'>
+    <main className='w-full h-full flex flex-col bg-[#f9f9f9] overflow-hidden'>
+    <div className='flex gap-3 w-full h-full  p-3'>
+        {/* <div className='w-full hidden semiMd:block'>
             <FriendLists />
-        </div>
+        </div> */}
         <div className='w-full '>
-            <FriendRecommendations getRecommendations={getRecommendations} />
+            <FriendRecommendations  />
         </div>
     </div>
+    </main>
   )
 }
 
