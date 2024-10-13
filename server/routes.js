@@ -1,6 +1,6 @@
 const {Router} = require("express");
 const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout } = require("./Controllers/userController");
-const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests } = require("./Controllers/FriendshipController");
+const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests, getFriends } = require("./Controllers/FriendshipController");
 const router = Router();
 
 // User route
@@ -18,6 +18,7 @@ router.get("/logout", logout);
 router.get("/getPeopleRecommendations", getPeopleRecommendations);
 router.get("/getPeopleRecommendations_v2", getPeopleRecommendations_v2);
 router.get("/getFriendRequests", getFriendRequests);
+router.get("/getFriends", getFriends);
 router.post("/requestFriendship", requestFriendship);
 router.get("/getFriendships", getFriendships);
 router.post("/respondFriendship", respondFriendship);

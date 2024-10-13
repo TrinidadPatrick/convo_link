@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import http from '../../../http'
 import FriendRecommendationStore from '../../store/FriendRecommendationStore'
 import Userimage from '../../ReusableComponents/Userimage'
-import FriendShipStore from '../../store/FriendShipsStore'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import onlineUserStore from '../../store/OnlineUsersStore'
 import FriendsStore from '../../store/FriendsStore'
 import FriendRequestStore from '../../store/FriendRequestStore'
+import FriendLists from './FriendLists'
 
 interface People{
     _id: string
@@ -32,11 +32,7 @@ interface RecommendationProps {
 
 const FriendRecommendations = () => {
     const {FriendRecommendation, setFriendRecommendation} = FriendRecommendationStore();
-    const {Friendships, setFriendShips} = FriendShipStore();
     const {FriendRequests, setFriendRequests} = FriendRequestStore();
-    const {Friends, setFriends} = FriendsStore();
-    const {user} = useAuthContext();
-    const {onlineUsers} = onlineUserStore();
 
     const [searchValue, setSearchValue] = useState<string>('')
     const [option, setOption] = useState<string>('Recommendations')
@@ -44,31 +40,26 @@ const FriendRecommendations = () => {
 
   // Request friendship
   const handleAddFriendship = async (userId : string) => {
-    const tempData = {
-        participants : [user?._id, userId],
-        initiator : user?._id,
-        status : 'pending',
-        createdAt : Date.now(),
-        updatedAt : Date.now()
-    }
-    setFriendShips([...Friendships, tempData])
+    const user = FriendRecommendation.find((person : any) => person._id == userId)
+    user.hasSentRequest = true
+    setFriendRecommendation([...FriendRecommendation])
       try {
         const result = await http.post('requestFriendship', {userId}, {withCredentials: true})
-        console.log(result.data)
       } catch (error : any) {
         console.log(error)
       }
   }
 
   // Respond to friendship request
-  const handleRespondFriendship = async (userId : string, status : string) => {
-    const index = Friendships.findIndex((friendship : i_FriendRequests) => friendship?.participants.includes(user?._id) && friendship.initiator == userId)
-    const newData = [...Friendships]
-    newData[index].status = status
-    setFriendShips(newData)
+  const handleRespondFriendship = async (_id : string, status : string) => {
+    // Remove friend request from the list because it has been responded
+    const index = FriendRequests.findIndex((fr : any)=> fr._id == _id)
+    const newData = [...FriendRequests]
+    newData.splice(index, 1)
+    setFriendRequests(newData)
 
       try {
-        const result = await http.post('respondFriendship', {_id : newData[index]._id, status}, {withCredentials: true})
+        const result = await http.post('respondFriendship', {_id : _id, status}, {withCredentials: true})
         console.log(result.data)
       } catch (error : any) {   
         console.log(error)
@@ -93,9 +84,9 @@ const FriendRecommendations = () => {
     }
   }
 
-  const getFriendRequests = async () => {
+  const getFriendRequests = async (searchValue : string) => {
     try {
-      const result = await http.get('getFriendRequests', {withCredentials: true})
+      const result = await http.get('getFriendRequests?searchValue=' + searchValue, {withCredentials: true})
       setFriendRequests(result.data.friendRequests)
     } catch (error : any) {
       console.log(error)
@@ -105,19 +96,16 @@ const FriendRecommendations = () => {
   // Gets recommendations and friendships
   useEffect(() => {
     getRecommendations_v2('')
-    getFriendRequests()
+    getFriendRequests('')
     return () => {
     }
   }, [])
 
-  console.log(FriendRequests)
-
-
   return (
-    <div className='flex flex-col gap-3 p-5 bg-white shadow w-full h-full'>
-      <div className='w-full relative flex justify-between items-center'>
+    <div className='flex flex-col gap-3 p-5 bg-white shadow w-full h-[100svh]'>
+      <div className='w-full  relative flex justify-between items-center'>
         <h1 className={`text-xl ${showMobileSearch ? ' opacity-0' : 'opacity-100'} transition-all font-medium text-gray-600`}>Explore new friends</h1>
-        <div className='flex gap-3 items-center'>
+        <div className='flex gap-3 Base:hidden items-center'>
           {
             showMobileSearch ?
             <button onClick={()=>setShowMobileSearch(false)} className='p-1 border-gray-500 rounded-full border w-8 flex justify-center items-center h-8 bg-gray-100'>
@@ -132,10 +120,17 @@ const FriendRecommendations = () => {
           
         </div>
         {/* Search field mobile */}
-        <div className={`${showMobileSearch ? 'w-[90%] sm:w-[250px] border border-gray-500' : 'w-0'} flex items-center overflow-hidden transition-all origin-right right-11 absolute  rounded-full bg-white h-8`}>
+        <div className={`${showMobileSearch ? 'w-[90%] sm:w-[250px] border border-gray-500' : 'w-0'} Base:hidden flex items-center overflow-hidden transition-all origin-right right-11 absolute  rounded-full bg-white h-8`}>
           <input
               onChange={(e : any)=>setSearchValue(e.target.value)}
-              onKeyDown={(e)=>{if(e.key == 'Enter'){ getRecommendations(searchValue)}}}
+              onKeyDown={(e)=>{if(e.key == 'Enter'){ 
+                if(option == 'friendRequests') {
+                  getFriendRequests(searchValue)
+                }
+                else {
+                  getRecommendations(searchValue)
+                }
+              }}}
               placeholder="Type a name"
               className="px-3 text-sm text-gray-600"
               name="search"
@@ -155,7 +150,13 @@ const FriendRecommendations = () => {
             name="search"
             type="text"
         />
-        <button onClick={()=>getRecommendations(searchValue)}>
+        <button onClick={()=>{if(option == 'friendRequests') {
+          getFriendRequests(searchValue)
+        }
+        else {
+          getRecommendations(searchValue)
+        }
+        }}>
           <svg
           className="size-6 absolute top-2.5 right-3 text-gray-500"
           stroke="currentColor"
@@ -178,7 +179,7 @@ const FriendRecommendations = () => {
           <button onClick={()=>setOption('friendRequests')} className={`px-3 semiSm:px-5 text-sm Base:text-base py-1 border border-theme_normal rounded-full ${option == 'friendRequests' ? 'bg-theme_normal text-white' : 'text-gray-500'}`}>Friend requests</button>
         </div>
       </div>
-      <div className=' w-full h-full gap-3  overflow-y-scroll grid xs:grid-cols-2 semiBase:grid-cols-3 semiMd:grid-cols-4  lg:grid-cols-6 justify-items-center pt-1 '>
+      <div className=' w-full h-full gap-3  overflow-y-scroll grid xxs:grid-cols-2 semiBase:grid-cols-3 semiMd:grid-cols-4  lg:grid-cols-6 justify-items-center pt-1 '>
         {
             option == 'friendRequests' ?
             // Pending requests

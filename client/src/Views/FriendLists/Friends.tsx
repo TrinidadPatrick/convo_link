@@ -4,7 +4,6 @@ import FriendRecommendations from './FriendRecommendations'
 import http from '../../../http'
 import FriendRecommendationStore from '../../store/FriendRecommendationStore'
 import Userimage from '../../ReusableComponents/Userimage'
-import FriendShipStore from '../../store/FriendShipsStore'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import onlineUserStore from '../../store/OnlineUsersStore'
 
@@ -28,7 +27,6 @@ interface Friendship{
 
 const Friends = () => {
     const {FriendRecommendation, setFriendRecommendation} = FriendRecommendationStore()
-    const {Friendships, setFriendShips} = FriendShipStore()
     const {user} = useAuthContext()
     const {onlineUsers} = onlineUserStore()
 

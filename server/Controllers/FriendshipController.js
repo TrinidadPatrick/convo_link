@@ -107,18 +107,64 @@ module.exports.getPeopleRecommendations_v2 = async (req, res) => {
 };
 
 module.exports.getFriendRequests = async (req, res) => {
+    const searchValue = req.query.searchValue;
+    let friendRequests
     try {
-        const friendRequests = await Friendship.find({
-            initiator : {$ne : req.user._id},
-            status : 'pending'
-        }).populate("initiator", "firstname lastname profileImage userBio profile_status")
-        .limit(50);
+        if (!searchValue) {
+             friendRequests = await Friendship.find({
+                initiator : {$ne : req.user._id},
+                status : 'pending'
+            }).populate("initiator", "firstname lastname profileImage userBio profile_status")
+            .limit(50);
+        }
+        else
+        {
+            const users = await User.find({
+                $or: [
+                    { firstname: { $regex: searchValue, $options: 'i' } },
+                    { lastname: { $regex: searchValue, $options: 'i' } }
+                ]
+            });
+
+            const userIds = users.map(user => user._id);
+
+
+             friendRequests = await Friendship.find({
+                initiator: { $ne: req.user._id },
+                status: 'pending',
+                participants: { $in: userIds } // Use $in to match any of the user IDs
+            }).populate("initiator", "firstname lastname profileImage userBio profile_status")
+            .limit(50);
+        }
+       
         
         return res.status(200).json({message: 'Friend requests fetched', friendRequests});
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 };
+
+module.exports.getFriends = async (req,res) => {
+    const searchValue = req.query.searchValue;
+    const userId = req.user._id;
+    const friendShips = await Friendship.find({participants : {$in : [userId]}, status : 'accepted'}).select('_id participants status initiator').limit(50);
+    
+    const friendIds = friendShips.flatMap(friendship => 
+        friendship.participants.filter(participant => 
+            participant.toString() !== req.user._id.toString() &&
+            friendship.status === 'accepted'
+        )
+    ).map(participant => participant._id.toString());
+
+    const friends = await User.find({
+        _id : {$in : friendIds},
+        $or: [
+            { firstname: { $regex: searchValue, $options: 'i' } },
+            { lastname: { $regex: searchValue, $options: 'i' } }
+        ]
+    }).select('_id firstname lastname profileImage userBio profile_status')
+    return res.status(200).json({ message: 'Friends fetched', friends : friends });
+}
 
 module.exports.requestFriendship = async (req,res) => {
     const {userId} = req.body;

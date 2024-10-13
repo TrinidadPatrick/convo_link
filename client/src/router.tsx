@@ -36,6 +36,10 @@ const router : any = createBrowserRouter([
         path: "/findPeople",
         element: <FriendRecommendations />
       },
+      {
+        path: "/friends",
+        element: <FriendLists />
+      },
     ],
   },
   {

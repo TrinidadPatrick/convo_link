@@ -21,7 +21,8 @@ export default {
         Base : "720px",
         semiBase : "610px",
         semiSm : "510px",
-        xs : "400px"
+        xs : "400px",
+        xxs : "300px"
       }
     },
     
