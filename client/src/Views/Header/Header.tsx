@@ -16,7 +16,7 @@ const Header = () => {
             const result = await http.get('logout', {withCredentials: true})
             setTimeout(() => {
                 window.location.reload()
-            }, 500);
+            }, 700);
         } catch (error : any) {
             console.log(error)
         }
