@@ -61,6 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
        {
         const socket : any = io(
             // 'http://localhost:5000'
+            // 'http://192.168.55.107:5000'
             'https://convo-link.onrender.com/'
             )
         isSocketConnected = true

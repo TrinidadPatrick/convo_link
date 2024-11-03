@@ -6,6 +6,7 @@ import Userimage from '../../ReusableComponents/Userimage'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import onlineUserStore from '../../store/OnlineUsersStore'
 import FriendsStore from '../../store/FriendsStore'
+import { useNavigate } from 'react-router-dom'
 
 interface People{
   _id: string
@@ -19,6 +20,7 @@ interface People{
 
 const FriendLists = () => {
   const {user} = useAuthContext();
+  const navigate = useNavigate();
   const {onlineUsers} = onlineUserStore();
   const {Friends, setFriends} = FriendsStore();
 
@@ -39,7 +41,6 @@ const FriendLists = () => {
     }
   }, [])
 
-  console.log(onlineUsers)
 
   return (
     <div className='flex flex-col gap-3 p-5 bg-white w-full shadow rounded h-full'>
@@ -102,7 +103,7 @@ const FriendLists = () => {
                     <div className='flex w-full justify-center'>
 
                         <div className='flex flex-col gap-1.5 w-full'>
-                        <button onClick={()=>{}} className='flex text-sm w-full bg-theme_normal items-center justify-center py-1.5 px-2 rounded gap-2 '>
+                        <button onClick={()=>{navigate("/chats/t/"+people?._id)}} className='flex text-sm w-full bg-theme_normal items-center justify-center py-1.5 px-2 rounded gap-2 '>
                             <p className='text-white font-normal'>Message</p>
                         </button>
                         </div>        

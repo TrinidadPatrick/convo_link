@@ -102,7 +102,7 @@ const FriendRecommendations = () => {
   }, [])
 
   return (
-    <div className='flex flex-col gap-3 p-5 bg-white shadow w-full h-[100svh]'>
+    <div className='flex flex-col gap-3 p-5 bg-[#f9f9f9] shadow w-full h-[100svh]'>
       <div className='w-full  relative flex justify-between items-center'>
         <h1 className={`text-xl ${showMobileSearch ? ' opacity-0' : 'opacity-100'} transition-all font-medium text-gray-600`}>Explore new friends</h1>
         <div className='flex gap-3 Base:hidden items-center'>
@@ -138,7 +138,7 @@ const FriendRecommendations = () => {
           />
         </div>
       </div>
-      <div className='h-0.5 rounded-full bg-theme_normal'></div>
+      <div className='h-0.5 rounded-full opacity-30 bg-theme_normal'></div>
 
       <div className='flex gap-3'>
       {/* Search field */}

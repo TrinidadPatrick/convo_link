@@ -10,6 +10,7 @@ import FindFriends from "./Views/FriendLists/FriendLists";
 import FriendLists from "./Views/FriendLists/FriendLists";
 import Friends from "./Views/FriendLists/Friends";
 import FriendRecommendations from "./Views/FriendLists/FriendRecommendations";
+import Main from "./Views/Chats/Main";
 
 const router : any = createBrowserRouter([
   {
@@ -18,7 +19,8 @@ const router : any = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <div>Homes</div>
+        element: <div>Test</div>
+        // element: <Main />
       },
       {
         path: "/about",
@@ -39,6 +41,10 @@ const router : any = createBrowserRouter([
       {
         path: "/friends",
         element: <FriendLists />
+      },
+      {
+        path: "/chats/:option/:_id",
+        element: <Main />
       },
     ],
   },

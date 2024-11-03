@@ -1,11 +1,12 @@
 const {Server, Socket} = require('socket.io');
 const User = require("./Models/userModel");
 const ConnectedUsers = require("./Models/ConnectedUsersModel");
+const { get } = require('http');
 
 module.exports = (httpServer) => {
     const io = new Server(httpServer, {
         cors: {
-            origin: ['http://localhost:3000', 'https://convo-wave.vercel.app'],
+            origin: ['http://localhost:3000', 'https://convo-wave.vercel.app', 'http://192.168.55.107:5000', 'http://192.168.55.107:3000'],
             methods: ['GET', 'POST'],
         },
     })
@@ -30,6 +31,7 @@ const getOnlineUsers = () => {
 
 
 
+
     io.on('connection', (socket) => {
         // Sets the status of the user
         socket.on('setProfileStatus', async (data) => {
@@ -44,6 +46,16 @@ const getOnlineUsers = () => {
         socket.on('addUserToConnectedUsers', (data) => {
             addUserToConnectedUsers(data.user_id, socket.id);
             io.emit('onlineUsers', onlineUsers);
+        });
+
+        // Notification
+        socket.on('notification_send', (data) => {
+            const receiver = onlineUsers.find((user) => user.user_id == data.receiver);
+            if(receiver)
+            {
+                io.to(receiver.socket_id).emit('notification_receive', data.type);
+            }
+            
         });
 
         socket.on('disconnect', async () => {

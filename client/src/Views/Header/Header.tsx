@@ -24,7 +24,7 @@ const Header = () => {
   return (
     <main className=''>
     <header className='flex items-center justify-between py-3 px-3 sm:px-8 bg-white border-b border-gray-200 shadow-sm'>
-        <div className='flex items-center gap-3'>
+        <div onClick={()=>navigate("/")} className='flex cursor-pointer items-center gap-3'>
             <img src={Logo} alt="logo" className='h-8' />
         </div>
         {/* User image */}

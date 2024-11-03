@@ -191,7 +191,7 @@ module.exports.login = async (req,res) => {
     if(user.email_verified && isPasswordCorrect)
     {
         const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30d'});
-        res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite : "None", secure: true});
+        res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
         return res.status(200).json({ message: 'Logged in successfully', token });
     }
     // If password is incorrect
@@ -305,7 +305,7 @@ module.exports.resetPassword = async (req, res) => {
 
 module.exports.logout = async (req, res) => {
   const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn: '0ms'});
-  res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "None", secure: true});
+  res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
   return res.status(200).json({ message: 'Logged out successfully' });
 }
 
