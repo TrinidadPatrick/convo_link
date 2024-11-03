@@ -34,7 +34,7 @@ const SigninForm = () => {
             if(result.status == 200)
             {
                 setTimeout(() => {
-                    // window.location.href = '/findPeople'
+                    window.location.href = '/findPeople'
                 }, 1000);
             }
         } catch (error : any) {
