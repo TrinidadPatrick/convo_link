@@ -13,7 +13,7 @@ router.get("/getUserProfile", getUserProfile);
 router.post("/forgotPassword", forgotPassword);
 router.post("/verifyFpyOTP", verifFpyOTP);
 router.patch("/resetPassword", resetPassword);
-router.get("/logout", logout);
+router.post("/logout", logout);
 
 // Friendship route
 router.get("/getPeopleRecommendations", getPeopleRecommendations);

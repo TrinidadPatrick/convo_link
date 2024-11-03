@@ -13,7 +13,7 @@ const Header = () => {
 
     const logout = async () => {
         try {
-            const result = await http.get('logout', {withCredentials: true})
+            const result = await http.post('logout',{}, {withCredentials: true})
             console.log(result.data)
             // setTimeout(() => {
                 // window.location.reload()
