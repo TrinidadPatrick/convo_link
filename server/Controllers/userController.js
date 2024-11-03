@@ -307,7 +307,13 @@ module.exports.resetPassword = async (req, res) => {
 module.exports.logout = async (req, res) => {
   const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn: '0ms'});
   // res.cookie('user_token', 'null', {maxAge: -1, httpOnly: true, sameSite : "None", secure: true});
-  res.cookie('user_tokens', 'null', {maxAge: -1, httpOnly: true, sameSite : "None", secure: true});
+  // res.cookie('user_tokens', 'null', {maxAge: -1, httpOnly: true, sameSite : "None", secure: true});
+  res.clearCookie('user_token', {
+    httpOnly: true,
+    secure: true, // Use true if your application is served over HTTPS
+    sameSite: 'None', // Adjust this based on your needs (Strict, Lax, None)
+  });
+  res.sendStatus(200); // Optional: send a success response
   // res.cookie('user_token', null, {secure: true , httpOnly: true , sameSite: 'None',maxAge: -1  }); //For testing set secure to true in prod
   // res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
   return res.status(200).json({ message: 'Logged out successfully testing' });
