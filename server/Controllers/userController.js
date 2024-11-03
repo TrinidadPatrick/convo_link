@@ -310,7 +310,7 @@ module.exports.logout = async (req, res) => {
   res.cookie('user_tokens', 'null', {maxAge: -1, httpOnly: true, sameSite : "Strict", secure: true});
   // res.cookie('user_token', null, {secure: true , httpOnly: true , sameSite: 'None',maxAge: -1  }); //For testing set secure to true in prod
   // res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
-  return res.status(200).json({ message: 'Logged out successfully' });
+  return res.status(200).json({ message: 'Logged out successfully testing' });
 }
 
 module.exports.getUserProfile = async (req,res) => {
