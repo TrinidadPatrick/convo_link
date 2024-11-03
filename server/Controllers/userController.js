@@ -307,7 +307,7 @@ module.exports.resetPassword = async (req, res) => {
 module.exports.logout = async (req, res) => {
   const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn: '0ms'});
   res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "None", secure: true}); //For testing set secure to true in prod
-  res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
+  // res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
   return res.status(200).json({ message: 'Logged out successfully' });
 }
 
