@@ -2,7 +2,10 @@ const {Router} = require("express");
 const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout } = require("./Controllers/userController");
 const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests, getFriends } = require("./Controllers/FriendshipController");
 const { getConversations, sendMessage } = require("./Controllers/ConversationController");
+const { keepAlive } = require("./Controllers/KeepAliveController");
 const router = Router();
+
+router.get("/keepAlive", keepAlive)
 
 // User route
 router.post("/createUser", createUser);

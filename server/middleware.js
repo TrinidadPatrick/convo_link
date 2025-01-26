@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const publicRoutes = ['/login', '/signup', '/verifyEmail', '/verifyOtp', '/resendOtp',
- '/forgotPassword', '/verifyFpyOTP', '/resetPassword', '/createUser', ]
+ '/forgotPassword', '/verifyFpyOTP', '/resetPassword', '/createUser', '/keepAlive']
 
 
 const protectedRoutes = ['/getUserProfile', '/getPeopleRecommendations', '/getPeopleRecommendations_v2', '/requestFriendship', 
