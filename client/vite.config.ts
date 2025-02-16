@@ -1,12 +1,37 @@
-import { defineConfig } from 'vite'
-import { qrcode } from 'vite-plugin-qrcode';
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import rollupNodePolyFill from 'rollup-plugin-polyfill-node';
+import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), qrcode()],
-//   server: {
-//     host: true
-// }
-})
-
+  plugins: [
+    react(),
+    rollupNodePolyFill() // add polyfill plugin for rollup
+  ],
+  define: {
+    global: 'globalThis' // polyfill global variable
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      // Define global variable for esbuild
+      define: {
+        global: 'globalThis'
+      },
+      plugins: [
+        NodeGlobalsPolyfillPlugin({
+          process: true,
+          buffer: true,
+        }),
+        NodeModulesPolyfillPlugin()
+      ]
+    }
+  },
+  build: {
+    rollupOptions: {
+      plugins: [
+        rollupNodePolyFill() // also include in build
+      ]
+    }
+  }
+});

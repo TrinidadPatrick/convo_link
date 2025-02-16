@@ -48,13 +48,6 @@ module.exports.getConversations = async (req, res) => {
     // If not fetched a conversation
     return res.status(200).json({conversationInfo : null, messages : [], user });
   }
-      
-  
-//   const conversations = await Conversation.find({ participants: { $in: [userId] } })
-//     .populate("participants", "_id firstname lastname profileImage userBio profile_status")
-//     .sort({ createdAt: -1 })
-//     .limit(50);
-//   return res.status(200).json({ message: "Conversations fetched", conversations });
 };
 
 
@@ -93,4 +86,31 @@ module.exports.sendMessage = async (req,res) => {
   }
   
 
+}
+
+module.exports.getConversationList = async (req, res) => {
+  const userId = req.user._id;
+
+  if(!userId)
+  {
+    return res.status(400).json({ message: "User not found"});
+  }
+
+  const conversations = await Conversation.find({
+    $and: [
+      { participants: { $elemMatch: { userId: userId } } },
+    ],
+    isGroup: false
+  }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
+  .populate('participants.userId', '_id firstname lastname profileImage')
+  
+  // get the user information
+  const user = await User.findOne({_id: userId, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
+  if(!user)
+  {
+      return res.status(400).json({ message: "User not found"});
+  }
+
+  // console.log(conversations);
+  return res.status(200).json({conversations, user });
 }

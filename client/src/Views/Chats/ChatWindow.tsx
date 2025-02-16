@@ -6,6 +6,8 @@ import Userimage from '../../ReusableComponents/Userimage'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import SocketStore from '../../store/SocketStore'
 import ConversationStore from '../../store/ConversationStore'
+import onlineUserStore from '../../store/OnlineUsersStore'
+import { useLocation } from 'react-router-dom'
 
 interface ConversationInfo{
     headId? : string | undefined,
@@ -40,16 +42,34 @@ interface Message {
     updatedAt: Date;
     isRead: boolean;
     messageType: string;
-  }
+}
 
-const ChatWindow = () => {
+interface Props {
+    handleGetConversations : () => void
+}
+
+const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
+    const location = useLocation();
     const {socket} = SocketStore()
-    const {Conversations, setConversations} = ConversationStore()
+    const {onlineUsers} = onlineUserStore();
+    const {Conversations, setConversations} = ConversationStore() //This is the list of messages not just conversation
     const {user} = useAuthContext()
     const {_id, option} = useParams()
     // T is for userID and E is for conversationID
     const [conversation, setConversation] = useState<Conversation | null>(null)
     const [messageContent, setMessageContent] = useState<string>('')
+
+    const openChatWindow = () => {
+        const chatWindow = window.open(
+          window.location.origin + '/vc', // Change this to your video call URL
+          "ChatWindow",
+          "width=800,height=600,left=300,top=100,resizable=yes"
+        );
+      
+        if (chatWindow) {
+          chatWindow.focus();
+        }
+      };
 
     const generateRandomId = () => {
         // Combining timestamp with a random number
@@ -100,8 +120,6 @@ const ChatWindow = () => {
                 newData[conversationIndex].messages.splice(messageIndex, 1, messageData)
                 newData[conversationIndex].conversationInfo = conversationData
                 setConversations(newData)
-                // console.log(conversationIndex)
-                // console.log(newData)
             }
     }
 
@@ -160,6 +178,7 @@ const ChatWindow = () => {
                 }
                 socket?.emit("notification_send", {type : 'newMessage', receiver : conversation?.user?._id})
                 setMessageContent("")
+                handleGetConversations()
         } catch (error) {
             console.log(error)
         }
@@ -181,9 +200,6 @@ const ChatWindow = () => {
             }
         })
     }, [socket])
-
-    // console.log(conversation)
-    // console.log(Conversations)
     
   return (
     <div className=' w-full h-full flex flex-col overflow-hidden'>
@@ -198,7 +214,12 @@ const ChatWindow = () => {
                 {/* Name and bio */}
                 <div className='flex flex-col  '>
                     <span className='text-[1rem] font-medium text-gray-800'>{conversation?.user?.firstname} {conversation?.user?.lastname}</span>
-                    <p className='text-[0.8rem] text-green-500'>Online</p>
+                    {
+                        onlineUsers?.some((user : any)=> user.user_id == conversation?.user?._id) ?
+                        <p className='text-[0.8rem] text-green-500'>Online</p>
+                        :
+                        <p className='text-[0.8rem] text-gray-500'>Offline</p>
+                    }
                 </div>
             </div>
             {/* Other options */}
@@ -206,7 +227,7 @@ const ChatWindow = () => {
                 <button className='flex items-center justify-center   '>
                     <span className="icon-[fluent--call-16-regular] text-2xl text-gray-400"></span>
                 </button>
-                <button className='flex items-center justify-center  '>
+                <button onClick={()=> openChatWindow()} className='flex items-center justify-center  '>
                     <span className="icon-[weui--video-call-outlined] text-2xl text-gray-400"></span>
                 </button>
                 <button className='flex items-center justify-center  '>

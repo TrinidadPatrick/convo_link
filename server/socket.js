@@ -6,7 +6,7 @@ const { get } = require('http');
 module.exports = (httpServer) => {
     const io = new Server(httpServer, {
         cors: {
-            origin: ['http://localhost:3000', 'https://convo-wave.vercel.app', 'http://192.168.55.107:5000', 'http://192.168.55.107:3000'],
+            origin: ['http://localhost:3000', 'https://convo-wave.vercel.app', 'http://192.168.100.5:5000/api', 'http://192.168.100.5:3000'],
             methods: ['GET', 'POST'],
         },
     })
@@ -62,6 +62,36 @@ const getOnlineUsers = () => {
             removeUser(socket.id);
             io.emit('onlineUsers', onlineUsers);
         });
+
+        // socket.on("call-user", (data) => {
+        //     const receiver = onlineUsers.find((user) => user.user_id === data.userToCall);
+        //     if (receiver) {
+        //         io.to(receiver.socket_id).emit("call-incoming", {
+        //             signal: data.signalData,
+        //             from: data.from,
+        //         });
+        //     } else {
+        //         console.log(`User ${data.userToCall} not found in online users.`);
+        //     }
+        // });
+        
+        socket.on('start-call', (data) => {
+            
+           const receiver = onlineUsers.find((user) => user.user_id === data.to);
+           console.log(receiver)
+            io.to(receiver.socket_id).emit('incoming-call', {
+              from: socket.id,
+              signal: data.signal
+            });
+          });
+        
+          socket.on('accept-call', (data) => {
+            io.to(data.to).emit('call-accepted', data.signal);
+          });
+        
+          socket.on('end-call', (data) => {
+            io.to(data.to).emit('call-ended');
+          });
     });
 
     return io;

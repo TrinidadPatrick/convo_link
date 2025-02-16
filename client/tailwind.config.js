@@ -1,4 +1,4 @@
-const { addDynamicIconSelectors } = require('@iconify/tailwind');
+import { addDynamicIconSelectors } from '@iconify/tailwind';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -16,21 +16,17 @@ export default {
         'theme_dark': '#2d6a4f',
         'theme_ultradark': '#1b4332',
       },
-      screens : {
-        semiMd : "850px",
-        Base : "720px",
-        semiBase : "610px",
-        semiSm : "510px",
-        xs : "400px",
-        xxs : "300px"
-      }
+      screens: {
+        semiMd: "850px",
+        Base: "720px",
+        semiBase: "610px",
+        semiSm: "510px",
+        xs: "400px",
+        xxs: "300px",
+      },
     },
-    
-    // screens: {
-    //   'xs': '400px',
-    // },
   },
   plugins: [
     addDynamicIconSelectors(),
   ],
-}
+};

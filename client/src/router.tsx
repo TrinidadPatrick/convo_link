@@ -11,6 +11,7 @@ import FriendLists from "./Views/FriendLists/FriendLists";
 import Friends from "./Views/FriendLists/Friends";
 import FriendRecommendations from "./Views/FriendLists/FriendRecommendations";
 import Main from "./Views/Chats/Main";
+import VideoCall from "./Views/Chats/VideoCall";
 
 const router : any = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router : any = createBrowserRouter([
         path: "/chats/:option/:_id",
         element: <Main />
       },
+      {
+        path: "/vc",
+        element: <VideoCall />
+      }
     ],
   },
   {

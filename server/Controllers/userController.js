@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+const { trusted } = require("mongoose");
 
 const generateOTP = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -192,7 +193,7 @@ module.exports.login = async (req,res) => {
     {
         const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn: '30d'});
         // res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
-        res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1001, httpOnly: true, sameSite : "None", secure: true}); //For testing set secure to true in prod
+        res.cookie('user_token', token, {maxAge: 30 * 24 * 60 * 60 * 1001, httpOnly: true, sameSite : "lax", secure: false}); //For testing set secure to true in prod
         return res.status(200).json({ message: 'Logged in successfully', token });
     }
     // If password is incorrect
@@ -306,17 +307,12 @@ module.exports.resetPassword = async (req, res) => {
 
 module.exports.logout = async (req, res) => {
   const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn: '0ms'});
-  // res.cookie('user_token', 'null', {maxAge: -1, httpOnly: true, sameSite : "None", secure: true});
-  // res.cookie('user_tokens', 'null', {maxAge: -1, httpOnly: true, sameSite : "None", secure: true});
   res.clearCookie('user_token', {
     httpOnly: true,
-    secure: true, // Use true if your application is served over HTTPS
-    sameSite: 'None', // Adjust this based on your needs (Strict, Lax, None)
+    secure: false, // Use true if your application is served over HTTPS
+    sameSite: 'lax', // Adjust this based on your needs (Strict, Lax, None)
   });
   res.sendStatus(200); // Optional: send a success response
-  // res.cookie('user_token', null, {secure: true , httpOnly: true , sameSite: 'None',maxAge: -1  }); //For testing set secure to true in prod
-  // res.cookie('user_token', token, {maxAge: 0, httpOnly: true, sameSite : "Strict", secure: false}); //For testing set secure to true in prod
-  return res.status(200).json({ message: 'Logged out successfully testing' });
 }
 
 module.exports.getUserProfile = async (req,res) => {
