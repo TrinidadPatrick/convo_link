@@ -12,26 +12,26 @@ export default defineConfig({
   define: {
     global: 'globalThis' // polyfill global variable
   },
-  optimizeDeps: {
-    esbuildOptions: {
-      // Define global variable for esbuild
-      define: {
-        global: 'globalThis'
-      },
-      plugins: [
-        NodeGlobalsPolyfillPlugin({
-          process: true,
-          buffer: true,
-        }),
-        NodeModulesPolyfillPlugin()
-      ]
-    }
-  },
-  build: {
-    rollupOptions: {
-      plugins: [
-        rollupNodePolyFill() // also include in build
-      ]
-    }
-  }
+  // optimizeDeps: {
+  //   esbuildOptions: {
+  //     // Define global variable for esbuild
+  //     define: {
+  //       global: 'globalThis'
+  //     },
+  //     plugins: [
+  //       NodeGlobalsPolyfillPlugin({
+  //         process: true,
+  //         buffer: true,
+  //       }),
+  //       NodeModulesPolyfillPlugin()
+  //     ]
+  //   }
+  // },
+  // build: {
+  //   rollupOptions: {
+  //     plugins: [
+  //       rollupNodePolyFill() // also include in build
+  //     ]
+  //   }
+  // }
 });
