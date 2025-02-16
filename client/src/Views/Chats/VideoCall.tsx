@@ -1,90 +1,77 @@
 import React, { useEffect, useRef, useState } from "react";
 import SocketStore from "../../store/SocketStore";
-import Peer, { Instance, SignalData } from 'simple-peer';
+import Peer, { Instance, SignalData } from "simple-peer";
 import { useAuthContext } from "../../Auth/AuthProvider";
 
-type CallStatus = 'idle' | 'calling' | 'receiving' | 'in-call';
+type CallStatus = "idle" | "calling" | "receiving" | "in-call";
 
 const VideoCall = () => {
-  const {user} = useAuthContext()
-  const {socket} = SocketStore()
+  const { user } = useAuthContext();
+  const { socket } = SocketStore();
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [callStatus, setCallStatus] = useState<CallStatus>('idle');
-  const [targetUserId, setTargetUserId] = useState<string>('');
+  const [callStatus, setCallStatus] = useState<CallStatus>("idle");
+  const [targetUserId, setTargetUserId] = useState<string>("");
   const [incomingCallId, setIncomingCallId] = useState<string | null>(null);
-
+  const [incomingSignal, setIncomingSignal] = useState<SignalData | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const peerRef = useRef<Instance>();
+  const peerRef = useRef<Instance | null>(null);
 
-  console.log(socket)
+  useEffect(() => {
+    if (!socket) return;
 
-    // Initialize socket connection
-    useEffect(() => { 
-    
-        socket?.on('connect', () => {
-          console.log('Connected to signaling server');
-        });
-    
-        socket?.on('incoming-call', (data: { from: string, signal: SignalData }) => {
-          setCallStatus('receiving');
-          setIncomingCallId(data.from);
-          if (peerRef.current) return;
-    
-          // Create peer instance for receiving call
-          peerRef.current = new Peer({ initiator: false, trickle: false });
-    
-          peerRef.current.on('signal', (signal) => {
-            socket?.current?.emit('accept-call', { 
-              to: data.from, 
-              signal 
-            });
-          });
-    
-          peerRef.current.on('stream', handleRemoteStream);
-          peerRef.current.signal(data.signal);
-        });
-    
-        socket?.on('call-accepted', (signal: SignalData) => {
-          if (peerRef.current) {
-            peerRef.current.signal(signal);
-            setCallStatus('in-call');
-          }
-        });
-    
-        socket?.on('end-call', () => {
-          resetCall();
-        });
-    
-        return () => {
-          socket?.disconnect();
-        };
-    }, [socket]);
+    const handleIncomingCall = (data: { from: string; signal: SignalData }) => {
+      setCallStatus("receiving");
+      setIncomingCallId(data.from);
+      setIncomingSignal(data.signal); // Store signal but don't accept yet
+    };
 
-    // Initialize media stream
+    const handleCallAccepted = (signal: SignalData) => {
+      if (peerRef.current) {
+        peerRef.current.signal(signal);
+        setCallStatus("in-call");
+      }
+    };
+
+    const handleEndCall = () => {
+      resetCall();
+    };
+
+    socket.on("incoming-call", handleIncomingCall);
+    socket.on("call-accepted", handleCallAccepted);
+    socket.on("end-call", handleEndCall);
+
+    return () => {
+      socket.off("incoming-call", handleIncomingCall);
+      socket.off("call-accepted", handleCallAccepted);
+      socket.off("end-call", handleEndCall);
+    };
+  }, [socket]);
+
   useEffect(() => {
     const initializeMedia = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: true, 
-          audio: true 
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
         });
+
         setLocalStream(stream);
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
       } catch (error) {
-        console.error('Error accessing media devices:', error);
+        console.error("Error accessing media devices:", error);
       }
     };
 
     initializeMedia();
 
     return () => {
-      localStream?.getTracks().forEach(track => track.stop());
+      localStream?.getTracks().forEach((track) => track.stop());
     };
-  }, [socket]);
+  }, []);
 
   const handleRemoteStream = (stream: MediaStream) => {
     setRemoteStream(stream);
@@ -93,76 +80,82 @@ const VideoCall = () => {
     }
   };
 
-//   console.log(new Peer({ initiator: true, trickle: false }))
+  const startCall = () => {
+    if (!targetUserId || !localStream) return;
 
-  const startCall = async () => {
-    if (!targetUserId) return;
+    setCallStatus("calling");
 
-    setCallStatus('calling');
-    const peer = new Peer({ initiator: true, trickle: false });
+    peerRef.current = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: localStream,
+    });
 
-    console.log(peer)
-
-    peer.on('signal', (signal) => {
-      socket?.emit('start-call', {
+    peerRef.current.on("signal", (signal) => {
+      socket.emit("start-call", {
         to: targetUserId,
-        signal
+        signal,
       });
     });
 
-    peer.on('stream', handleRemoteStream);
-    
-    if (localStream) {
-      peer.addStream(localStream);
-    }
-
-    peerRef.current = peer;
+    peerRef.current.on("stream", handleRemoteStream);
   };
 
   const acceptCall = () => {
-    setCallStatus('in-call');
-    if (peerRef.current && incomingCallId) {
-      // The peer instance was already created in the incoming-call handler
-      // Just update UI state
+    if (!incomingCallId || !incomingSignal || !localStream) {
+      console.error("Cannot accept call: Missing data.");
+      return;
     }
+
+    setCallStatus("in-call");
+
+    peerRef.current = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: localStream,
+    });
+
+    peerRef.current.on("signal", (signal) => {
+      socket.emit("accept-call", {
+        to: incomingCallId,
+        signal,
+      });
+    });
+
+    peerRef.current.on("stream", handleRemoteStream);
+
+    // Accept stored incoming signal
+    peerRef.current.signal(incomingSignal);
   };
 
   const endCall = () => {
-    socket?.current?.emit('end-call', { to: targetUserId || incomingCallId });
+    if (socket && (targetUserId || incomingCallId)) {
+      socket.emit("end-call", { to: targetUserId || incomingCallId });
+    }
     resetCall();
   };
 
   const resetCall = () => {
     if (peerRef.current) {
       peerRef.current.destroy();
-      peerRef.current = undefined;
+      peerRef.current = null;
     }
-    setCallStatus('idle');
+
+    setCallStatus("idle");
     setIncomingCallId(null);
-    setTargetUserId('');
+    setIncomingSignal(null);
     setRemoteStream(null);
   };
 
   return (
     <div className="video-call-container">
       <div className="video-container flex gap-2">
-        <video 
-          ref={localVideoRef} 
-          autoPlay 
-          playsInline 
-          muted 
-          className="local-video"
-        />
-        <video 
-          ref={localVideoRef} 
-          autoPlay 
-          playsInline 
-          className="remote-video"
-        />
+        <video ref={localVideoRef} autoPlay playsInline muted className="local-video" />
+        <video ref={remoteVideoRef} autoPlay playsInline className="remote-video" />
       </div>
 
       <div className="controls">
-        {callStatus === 'idle' && (
+        {callStatus === "idle" && (
           <div className="call-init">
             <input
               type="text"
@@ -174,7 +167,7 @@ const VideoCall = () => {
           </div>
         )}
 
-        {callStatus === 'receiving' && (
+        {callStatus === "receiving" && (
           <div className="incoming-call">
             <p>Incoming call from {incomingCallId}</p>
             <button onClick={acceptCall}>Answer</button>
@@ -182,19 +175,19 @@ const VideoCall = () => {
           </div>
         )}
 
-        {(callStatus === 'calling' || callStatus === 'in-call') && (
+        {(callStatus === "calling" || callStatus === "in-call") && (
           <div className="active-call">
             <p>
-              {callStatus === 'calling' 
-                ? `Calling ${targetUserId}...` 
-                : `In call with ${targetUserId || incomingCallId}`}
+              {callStatus === "calling"
+                ? `Calling ${targetUserId}...`
+                : `In call with ${incomingCallId || targetUserId}`}
             </p>
             <button onClick={endCall}>End Call</button>
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default VideoCall
+export default VideoCall;

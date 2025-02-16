@@ -78,7 +78,6 @@ const getOnlineUsers = () => {
         socket.on('start-call', (data) => {
             
            const receiver = onlineUsers.find((user) => user.user_id === data.to);
-           console.log(receiver)
             io.to(receiver.socket_id).emit('incoming-call', {
               from: socket.id,
               signal: data.signal
@@ -86,6 +85,8 @@ const getOnlineUsers = () => {
           });
         
           socket.on('accept-call', (data) => {
+            // const receiver = onlineUsers.find((user) => user.user_id === data.to);
+            console.log(data.to)
             io.to(data.to).emit('call-accepted', data.signal);
           });
         
