@@ -6,8 +6,8 @@ import rollupNodePolyFill from 'rollup-plugin-polyfill-node';
 
 export default defineConfig({
   plugins: [
-    react(),
-    rollupNodePolyFill() // add polyfill plugin for rollup
+    react(),  
+    rollupNodePolyFill()
   ],
   define: {
     global: 'globalThis' // polyfill global variable
