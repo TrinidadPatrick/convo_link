@@ -65,6 +65,7 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
     const [messageContent, setMessageContent] = useState<string>('')
     const bottomRef = useRef<HTMLDivElement>(null);
     const [page, setPage] = useState<number>(1);
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const limit = 10;
 
     useImperativeHandle(ref, () => ({
@@ -274,12 +275,21 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
     }, [page])
 
     useEffect(() => {
-        setTimeout(()=>{
-            getConversations(10, 1, true)
-        }, 10)
+        const fetchConversation = async () => {
+          setIsLoading(true);
+          await getConversations(10, 1, true);
+          setIsLoading(false);
+        };
+      
+        const timeout = setTimeout(() => {
+          fetchConversation();
+        }, 5);
+      
         return () => {
-        }
-    }, [option, _id])
+          clearTimeout(timeout); // Clean up timeout on unmount or re-run
+        };
+      }, [option, _id]);
+      
     
     // real time notification
     useEffect(() => {
@@ -302,7 +312,19 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
         {/* Header */}
         <section className='w-full flex justify-between shadow-sm p-2'>
             {/* Profile Information */}
-            <div className='h-full flex gap-2'>
+            {
+                isLoading ?
+                <div className="relative flex w-64 animate-pulse gap-2 p-0.5">
+              <div className="h-12 w-12 rounded-full bg-slate-200"></div>
+                <div className="flex-1">
+                  <div className="mb-1 h-5 w-3/5 rounded-lg bg-slate-200 text-lg"></div>
+                  <div className="h-5 w-[90%] rounded-lg bg-slate-200 text-sm"></div>
+                </div>
+              <div className="absolute bottom-5 right-0 h-4 w-4 rounded-full bg-slate-200"></div>
+          </div>
+                :
+                <>
+                <div className='h-full flex gap-2'>
                 {/* Image */}
                 <div className='flex h-full'>
                 <Userimage firstname={conversation?.user?.firstname} lastname={conversation?.user?.lastname} size={25} width={45} height={44} /> 
@@ -317,22 +339,39 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
                         <p className='text-[0.8rem] text-gray-500'>Offline</p>
                     }
                 </div>
-            </div>
-            {/* Other options */}
-            <div className='flex gap-4 px-5'>
-                {/* <button className='flex items-center justify-center   '>
-                    <span className="icon-[fluent--call-16-regular] text-2xl text-gray-400"></span>
-                </button>
-                <button onClick={()=> openVcWindow()} className='flex items-center justify-center  '>
-                    <span className="icon-[weui--video-call-outlined] text-2xl text-gray-400"></span>
-                </button> */}
-                <button className='flex items-center justify-center  '>
-                <span className="icon-[material-symbols-light--info-outline] text-2xl text-gray-400"></span>
-                </button>
-            </div>
+                </div>
+                {/* Other options */}
+                <div className='flex gap-4 px-5'>
+                    {/* <button className='flex items-center justify-center   '>
+                        <span className="icon-[fluent--call-16-regular] text-2xl text-gray-400"></span>
+                    </button>
+                    <button onClick={()=> openVcWindow()} className='flex items-center justify-center  '>
+                        <span className="icon-[weui--video-call-outlined] text-2xl text-gray-400"></span>
+                    </button> */}
+                    <button className='flex items-center justify-center  '>
+                    <span className="icon-[material-symbols-light--info-outline] text-2xl text-gray-400"></span>
+                    </button>
+                </div>
+                </>
+            }
+            
         </section>
         {/* Messages */}
         <div className='flex-1 w-full h-full flex flex-col overflow-auto '>
+        {
+            isLoading ?
+            <div role="status" className=" animate-pulse w-full h-full px-5 flex flex-col justify-evenly">
+            <div className="h-5 bg-slate-200 rounded-full  w-48 mb-4"></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[60%] "></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[80%]"></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[70%] "></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[50%] "></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[360px] "></div>
+            <div className="h-5 bg-slate-200 rounded-full  max-w-[65%]"></div>
+            <span className="sr-only">Loading...</span>
+            </div>
+        :
+        <>
             <div className='w-full flex justify-center'>
                 <button className='flex items-center justify-center' onClick={()=>setPage((prev)=> prev + 1)}>
                 {/* ()=>setPage((prev)=> prev + 1) */}
@@ -362,6 +401,9 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
             })
         }
         <div ref={bottomRef}></div>
+        </>
+        }
+        
         </div>
         {/* Input */}
         <div className='flex w-full p-2 '>
