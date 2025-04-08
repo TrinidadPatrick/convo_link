@@ -5,7 +5,7 @@ const publicRoutes = ['/login', '/signup', '/verifyEmail', '/verifyOtp', '/resen
 
 const protectedRoutes = ['/getUserProfile', '/getPeopleRecommendations', '/getPeopleRecommendations_v2', '/requestFriendship', 
 '/getFriendships', '/respondFriendship', '/logout', '/getFriendRequests', '/getFriends', '/getConversations', '/sendMessage',
-"/getConversationList"
+"/getConversationList", "/readConversation"
 ]
 
 const middleware = (req, res, next) => {

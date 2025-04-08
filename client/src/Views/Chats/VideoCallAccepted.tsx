@@ -3,10 +3,12 @@ import SocketStore from "../../store/SocketStore";
 import Peer, { Instance, SignalData } from "simple-peer";
 import { useAuthContext } from "../../Auth/AuthProvider";
 import { useParams } from "react-router-dom";
+import VideoCallStore from "../../store/VideoCallStore";
 
 type CallStatus = "idle" | "calling" | "receiving" | "in-call";
 
-const VideoCall = () => {
+const VideoCallAccepted = () => {
+  const {vcObject, setVcObject} = VideoCallStore()
   const {_id} = useParams();
   const { user } = useAuthContext();
   const { socket } = SocketStore();
@@ -22,6 +24,17 @@ const VideoCall = () => {
 
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
+
+  useEffect(()=>{
+    if(vcObject)
+    {
+      setIncomingCallId(vcObject.incomingCallId)
+      setIncomingSignal(vcObject.incomingSignal)
+      setCallStatus(vcObject.callStatus)
+    }
+    
+  },[vcObject])
+  console.log(vcObject)
 
   useEffect(() => {
     if (!socket) return;
@@ -253,4 +266,4 @@ const VideoCall = () => {
   );
 };
 
-export default VideoCall;
+export default VideoCallAccepted;

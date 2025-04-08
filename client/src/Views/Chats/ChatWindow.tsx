@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react'
 import FriendsStore from '../../store/FriendsStore'
 import { useParams } from 'react-router-dom'
 import http from '../../../http'
@@ -48,7 +48,11 @@ interface Props {
     handleGetConversations : () => void
 }
 
-const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
+export type ChatWindowRef = {
+    handleGetConversations: () => void;
+  };
+
+const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
     const location = useLocation();
     const {socket} = SocketStore()
     const {onlineUsers} = onlineUserStore();
@@ -56,28 +60,32 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
     const {user} = useAuthContext()
     const {_id, option} = useParams()
     // T is for userID and E is for conversationID
+    const [userId, setUserId] = useState<string>('')
     const [conversation, setConversation] = useState<Conversation | null>(null)
     const [messageContent, setMessageContent] = useState<string>('')
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const [page, setPage] = useState<number>(1);
+    const limit = 10;
 
-    const openChatWindow = () => {
-        const chatWindow = window.open(
-          window.location.origin + '/vc', // Change this to your video call URL
-          "ChatWindow",
-          "width=800,height=600,left=300,top=100,resizable=yes"
-        );
-      
-        if (chatWindow) {
-          chatWindow.focus();
+    useImperativeHandle(ref, () => ({
+        handleGetConversations: () => getConversations(10,1, true)
+    }));
+
+    const scrollToBottom = () => {
+        if(bottomRef.current)
+        {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' })
         }
-      };
+    }
+
 
     const generateRandomId = () => {
         // Combining timestamp with a random number
         const newId = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         return newId;
-      };
-    
-    const getConversations = async () => {
+    };
+
+    const load_more_conversation = async (limit : number, page : number, fetchLatest : boolean) => {
         // Deletes the old conversation from the store where its null
         const newConversations = [...Conversations];
         const conversationIndex = newConversations.findIndex((conversation : Conversation) => conversation?.user?._id == _id)
@@ -87,23 +95,89 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
         }
         try {
             // Find the conversation in the existing store
-            const conversation = newConversations.find((conversation : Conversation) => conversation?.conversationInfo?._id == _id)
-            if(conversation)
-            {
-                setConversation(conversation)
-            }
+            const conversation = newConversations.find((conversation : Conversation) => conversation?.conversationInfo?.participants.some((participant : any) => participant.userId == _id))
             // Then get the latest conversation from the database and put it in the store
-            const result = await http.get('getConversations?option='+option+'&_id='+_id, {withCredentials: true})
+            const result = await http.get('getConversations?option='+option+'&_id='+_id+'&limit='+limit+'&page='+page, {withCredentials: true})
+            // sets the url parameter to the conversation
+            if(result.data.NVP)
+            {
+                const optionResult = result.data.conversationInfo.isGroup ? 'g' : 't'
+                window.history.pushState(null, '', `/chats/${optionResult}/${result.data.user._id}`)
+            }
+            
+            // Get conversation index from store
             const conversationIndex = newConversations.findIndex((conversation : Conversation) => conversation?.conversationInfo?._id == result.data.conversationInfo._id)
             if(conversationIndex == -1)
             {
                 setConversations([...newConversations, result.data])
                 setConversation(result.data)
             }
+            // If conversation index is not -1 then update the conversation in the store
+            else
+            {
+                const updatedConversation = {
+                    ...newConversations[conversationIndex],
+                    messages: [
+                      ...result.data.messages, // prepend older messages (page 2, 3, etc.)
+                      ...newConversations[conversationIndex].messages
+                    ]
+                  };
+                  setConversations([
+                    ...newConversations.slice(0, conversationIndex),
+                    updatedConversation,
+                    ...newConversations.slice(conversationIndex + 1),
+                  ]);
+
+                setConversation((prev : any) => ({
+                    ...prev,
+                    messages: [...result.data.messages, ...prev.messages]
+                  }));
+                  
+            }
+        } catch (error : any) {
+            console.log(error)
+        }
+    }
+    
+    const getConversations = async (limit : number, page : number, fetchLatest : boolean) => {
+        // Deletes the old conversation from the store where its null
+        const newConversations = [...Conversations];
+        const conversationIndex = newConversations.findIndex((conversation : Conversation) => conversation?.user?._id == _id)
+        if(conversationIndex !== -1 && newConversations[conversationIndex].conversationInfo == null)
+        {
+            newConversations.splice(conversationIndex, 1);
+        }
+        try {
+            
+            // Find the conversation in the existing store
+            const conversation = newConversations.find((conversation : Conversation) => conversation?.conversationInfo?.participants.some((participant : any) => participant.userId == _id))
+            if(conversation && page == 1 && !fetchLatest)
+            {
+                setConversation(conversation)
+                // return
+            }
+            // Then get the latest conversation from the database and put it in the store
+            const result = await http.get('getConversations?option='+option+'&_id='+_id+'&limit='+limit+'&page='+page, {withCredentials: true})
+            // sets the url parameter to the conversation
+            if(result.data.NVP)
+            {
+                const optionResult = result.data.conversationInfo.isGroup ? 'g' : 't'
+                window.history.pushState(null, '', `/chats/${optionResult}/${result.data.user._id}`)
+            }
+            // Get conversation index from store
+            const conversationIndex = newConversations.findIndex((conversation : Conversation) => conversation?.conversationInfo?._id == result.data.conversationInfo._id)
+            if(conversationIndex == -1)
+            {
+                // console.log("Hello")
+                setConversations([...newConversations, result.data])
+                setConversation(result.data)
+            }
+            // If conversation index is not -1 then update the conversation in the store
             else
             {
                 setConversations([...newConversations.slice(0, conversationIndex), result.data, ...newConversations.slice(conversationIndex + 1)])
                 setConversation(result.data)
+                  
             }
         } catch (error : any) {
             console.log(error)
@@ -123,6 +197,9 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
             }
     }
 
+    useEffect(() => {
+        scrollToBottom()
+    }, [conversation])
 
     const sendMessage = async () => {
         const newConversations = [...Conversations];
@@ -163,6 +240,10 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
                newConversations[conversationIndex].messages = [...newConversations[conversationIndex].messages, messageContentData];
                setConversations(newConversations);
            }
+
+           setTimeout(() => {
+            scrollToBottom()
+           }, 500);
         }
 
         // Store the message to database
@@ -170,36 +251,51 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
                 const result = await http.post(`sendMessage`, conversationData, {withCredentials: true})
                 if(conversation?.conversationInfo == null)
                 {
-                    getConversations()
+                    getConversations(limit, page, false)
                 }
                 else
                 {
                     updateConversations(result.data.conversation , result.data.newMessage, newConversations)
                 }
-                socket?.emit("notification_send", {type : 'newMessage', receiver : conversation?.user?._id})
+                socket?.emit("message_notification_send", {type : 'newMessage', receiver : conversation?.user?._id})
                 setMessageContent("")
-                handleGetConversations()
+                props.handleGetConversations()
         } catch (error) {
             console.log(error)
         }
             
     }
 
+    useEffect(() => {  
+        if(page > 1)
+        {
+            load_more_conversation(limit, page, false)
+        }
+    }, [page])
+
     useEffect(() => {
-        getConversations()
+        setTimeout(()=>{
+            getConversations(10, 1, true)
+        }, 10)
         return () => {
         }
-    }, [])
+    }, [option, _id])
     
     // real time notification
     useEffect(() => {
-        socket?.on('notification_receive', (data : any) => {
+        socket?.on('message_notification', (data : any) => {
             if(data == 'newMessage')
             {
-                getConversations()
+                console.log(_id)
+                getConversations(10, 1, true)
             }
         })
-    }, [socket])
+
+        return () => {
+            // socket?.off('message_notification', getConversations(10, 1));
+          };
+    }, [socket, _id])
+
     
   return (
     <div className=' w-full h-full flex flex-col overflow-hidden'>
@@ -224,12 +320,12 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
             </div>
             {/* Other options */}
             <div className='flex gap-4 px-5'>
-                <button className='flex items-center justify-center   '>
+                {/* <button className='flex items-center justify-center   '>
                     <span className="icon-[fluent--call-16-regular] text-2xl text-gray-400"></span>
                 </button>
-                <button onClick={()=> openChatWindow()} className='flex items-center justify-center  '>
+                <button onClick={()=> openVcWindow()} className='flex items-center justify-center  '>
                     <span className="icon-[weui--video-call-outlined] text-2xl text-gray-400"></span>
-                </button>
+                </button> */}
                 <button className='flex items-center justify-center  '>
                 <span className="icon-[material-symbols-light--info-outline] text-2xl text-gray-400"></span>
                 </button>
@@ -237,6 +333,12 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
         </section>
         {/* Messages */}
         <div className='flex-1 w-full h-full flex flex-col overflow-auto '>
+            <div className='w-full flex justify-center'>
+                <button className='flex items-center justify-center' onClick={()=>setPage((prev)=> prev + 1)}>
+                {/* ()=>setPage((prev)=> prev + 1) */}
+                    <span className="icon-[fluent:arrow-down-16-filled] text-2xl text-gray-400">s</span>
+                </button>
+            </div>
         {
             conversation?.messages?.sort((a,b)=> new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((message : any, index : number) => {
                 const isSender = message?.senderId?._id == user?._id || message?.senderId == user?._id
@@ -259,6 +361,7 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
                 )
             })
         }
+        <div ref={bottomRef}></div>
         </div>
         {/* Input */}
         <div className='flex w-full p-2 '>
@@ -282,6 +385,6 @@ const ChatWindow : React.FC<Props> = ({handleGetConversations} : Props) => {
 
     </div>
   )
-}
+})
 
 export default ChatWindow

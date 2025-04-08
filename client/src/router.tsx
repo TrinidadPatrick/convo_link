@@ -12,6 +12,7 @@ import Friends from "./Views/FriendLists/Friends";
 import FriendRecommendations from "./Views/FriendLists/FriendRecommendations";
 import Main from "./Views/Chats/Main";
 import VideoCall from "./Views/Chats/VideoCall";
+import VideoCallAccepted from "./Views/Chats/VideoCallAccepted";
 
 const router : any = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ const router : any = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <div>Test</div>
+        element: <Main />
         // element: <Main />
       },
       {
@@ -48,9 +49,9 @@ const router : any = createBrowserRouter([
         element: <Main />
       },
       {
-        path: "/vc",
-        element: <VideoCall />
-      }
+        path: "/chats",
+        element: <Main />
+      },
     ],
   },
   {
@@ -74,6 +75,18 @@ const router : any = createBrowserRouter([
         element: <ForgotPassword />
       },
     ],
+  },
+  {
+    path: "/vc/:_id",
+    element: <VideoCall />
+  },
+  {
+    path: "/vc",
+    element: <VideoCall />
+  },
+  {
+    path: "/vc/accepted",
+    element: <VideoCallAccepted />
   }
 ]);
 

@@ -1,7 +1,7 @@
 const {Router} = require("express");
 const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout } = require("./Controllers/userController");
 const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests, getFriends } = require("./Controllers/FriendshipController");
-const { getConversations, sendMessage, getConversationList } = require("./Controllers/ConversationController");
+const { getConversations, sendMessage, getConversationList, readConversation } = require("./Controllers/ConversationController");
 const { keepAlive } = require("./Controllers/KeepAliveController");
 const router = Router();
 
@@ -31,5 +31,6 @@ router.post("/respondFriendship", respondFriendship);
 router.get("/getConversations", getConversations);
 router.post("/sendMessage", sendMessage);
 router.get("/getConversationList", getConversationList);
+router.patch("/readConversation", readConversation);
 
 module.exports = router;

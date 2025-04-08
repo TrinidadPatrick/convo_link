@@ -3,51 +3,97 @@ const Conversation = require("../Models/ConversationModel");
 const Message = require("../Models/MessageModel");
 const Friendship = require("../Models/FriendShipModel");
 
+// Get the scpecific conversation of user
 module.exports.getConversations = async (req, res) => {
   const userId = req.user._id;
-  const _id = req.query._id;
+  const _id = req.query._id; //_id of the user the user is chatting with
   const option = req.query.option;
+  const limit = req.query.limit;
+  const page = req.query.page;
 
-  const isUserFriend = await Friendship.countDocuments({
-    participants: { $all: [userId, _id] },
-    status: 'accepted'
-  });
+  const skip = (parseInt(page) - 1) * parseInt(limit);
 
-  // User is not friends with the user you are trying to chat with
-  if(!isUserFriend)
+  // If there is a valid parameters
+  if(_id != 'undefined' && option != 'undefined')
   {
-    return res.status(400).json({ message: "User is not friends with the user you are trying to chat with"});
-  }
+    const isUserFriend = await Friendship.countDocuments({
+      participants: { $all: [userId, _id] },
+      status: 'accepted'
+    });
   
-  if(option == 't') //Meaning get conversation using user id not convo iD
-  {
-    const conversation = await Conversation.findOne({
-        $and: [
-          { participants: { $elemMatch: { userId: userId } } },
-          { participants: { $elemMatch: { userId: _id } } }
-        ],
-        isGroup: false
-      }).populate('lastMessage.messageId', 'content createdAt isRead senderId');  
-    
-    // get the user information
-    const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
-    if(!user)
+    // User is not friends with the user you are trying to chat with
+    if(!isUserFriend)
     {
-        return res.status(400).json({ message: "User not found"});
+      return res.status(400).json({ message: "User is not friends with the user you are trying to chat with"});
     }
+    
+    if(option == 't') //Meaning get conversation using user id not convo iD
+    {
+      const conversation = await Conversation.findOne({
+          $and: [
+            { participants: { $elemMatch: { userId: userId } } },
+            { participants: { $elemMatch: { userId: _id } } }
+          ],
+          isGroup: false
+        }).populate('lastMessage.messageId', 'content createdAt isRead senderId');  
+      
+      // get the user information
+      const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
+      if(!user)
+      {
+          return res.status(400).json({ message: "User not found"});
+      }
+  
+      // If fetched a conversation
+      if(conversation)
+      {
+          const messages = await Message.find({ conversationId: conversation._id }).sort({createdAt : 1})
+          .populate("senderId", "firstname lastname profileImage userBio profile_status")
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit);
+          return res.status(200).json({conversationInfo : conversation, messages, user });
+      }
+      // If not fetched a conversation
+      return res.status(200).json({conversationInfo : null, messages : [], user });
+    }
+  }
+
+
+  // If there is no valid parameters means get the latest conversation
+  else
+  {
+      const conversations = await Conversation.find({
+        $and: [
+          { participants: { $elemMatch: { userId: userId } } }
+        ],
+      }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
+      .sort({ 'lastMessage.timestamp': -1 })
+      .limit(1);
 
     // If fetched a conversation
-    if(conversation)
+    if(conversations)
     {
-        const messages = await Message.find({ conversationId: conversation._id }).sort({createdAt : 1})
+        // get the user information
+        const _id = conversations[0].participants.find((participant)=> participant.userId != userId).userId;
+        const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
+        const option = conversations[0].isGroup ? 'g' : 't';
+        const conversationId = conversations[0]._id;
+        // console.log(user)
+        if(!user)
+        {
+            return res.status(400).json({ message: "User not found"});
+        }
+        const messages = await Message.find({ conversationId: conversationId }).sort({createdAt : 1})
         .populate("senderId", "firstname lastname profileImage userBio profile_status")
         .sort({ createdAt: -1 })
         .limit(50);
-        return res.status(200).json({conversationInfo : conversation, messages, user });
+        return res.status(200).json({conversationInfo : conversations[0], messages, user, NVP : true });
     }
-    // If not fetched a conversation
-    return res.status(200).json({conversationInfo : null, messages : [], user });
+    //If not fetched a conversation
+    return res.status(400).json({conversationInfo : null, messages : [], user: null  });
   }
+  
 };
 
 
@@ -103,6 +149,7 @@ module.exports.getConversationList = async (req, res) => {
     isGroup: false
   }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
   .populate('participants.userId', '_id firstname lastname profileImage')
+  .sort({ 'lastMessage.timestamp': -1 })
   
   // get the user information
   const user = await User.findOne({_id: userId, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
@@ -113,4 +160,37 @@ module.exports.getConversationList = async (req, res) => {
 
   // console.log(conversations);
   return res.status(200).json({conversations, user });
+}
+
+module.exports.readConversation = async (req, res) => {
+  const userId = req.user._id;
+  const _id = req.body._id;
+  const option = req.body.option;
+  const isGroup = option == 'g';
+
+  // If there is a valid parameters
+  if(_id != 'undefined' && option != 'undefined')
+  {
+    const isUserFriend = await Friendship.countDocuments({
+      participants: { $all: [userId, _id] },
+      status: 'accepted'
+    })
+    if(isUserFriend)
+    {
+      const conversation = await Conversation.findOne({
+          $and: [
+            { participants: { $elemMatch: { userId: userId } } },
+            { participants: { $elemMatch: { userId: _id } } },
+            { isGroup: isGroup }
+          ],
+        }).select('_id')
+      
+      if(conversation)
+      {
+        const messages = await Message.find({ conversationId: conversation._id })
+      }
+    }
+    
+  }
+
 }

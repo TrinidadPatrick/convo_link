@@ -6,11 +6,10 @@ import Dropdown from '../../ReusableComponents/Dropdown';
 import http from '../../../http';
 import { useNavigate } from 'react-router-dom';
 
-const Header = () => {
+const Header : React.FC<any> = () => {
     const {user} = useAuthContext();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState<boolean>(false)
-
     const logout = async () => {
         try {
             const result = await http.post('logout',{}, {withCredentials: true})
@@ -55,7 +54,7 @@ const Header = () => {
                         },
                         {
                             item : `Chats`, 
-                            event: ()=>{}, fontSize: 12, fontColor: 'gray', fontWeight: 500,
+                            event: ()=>{navigate('/')}, fontSize: 12, fontColor: 'gray', fontWeight: 500,
                             icon : <span className="icon-[fluent--chat-12-regular] text-gray-400"></span>
                         },
                         {

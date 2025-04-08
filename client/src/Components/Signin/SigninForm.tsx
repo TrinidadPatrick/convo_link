@@ -34,7 +34,7 @@ const SigninForm = () => {
             if(result.status == 200)
             {
                 setTimeout(() => {
-                    window.location.href = '/findPeople'
+                    window.location.href = '/friends'
                 }, 1000);
             }
         } catch (error : any) {
@@ -92,20 +92,20 @@ const SigninForm = () => {
                 <div className='w-full flex flex-col items-end'>
                     {/* Password */}
                     <div className='flex relative w-full'>
+                    <input onKeyDown={(e)=>{if(e.key == 'Enter'){ handleSubmit()}}} onChange={(e : any)=>setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} placeholder='Password' className='w-full h-9 rounded-md border-2 border-theme_semilight ps-8 pe-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
                     <span className="icon-[formkit--password] text-lg absolute top-[0.6rem] left-2 text-theme_normal"></span>
                     <button onClick={()=>setShowPassword(!showPassword)} className='flex absolute right-2 top-2 items-center justify-center '>
                         {
                             showPassword ? <span className="icon-[fluent--eye-28-filled] text-xl text-theme_normal"></span> : <span className="icon-[fluent--eye-off-16-filled]  text-xl text-theme_normal"></span>
                         }
                     </button>
-                    <input onKeyDown={(e)=>{if(e.key == 'Enter'){ handleSubmit()}}} onChange={(e : any)=>setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} placeholder='Password' className='w-full h-9 rounded-md border-2 border-theme_semilight ps-8 pe-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
                     </div>
 
                     <button className="text-xs mt-0.5 hover:text-gray-500" onClick={()=>{navigate('/forgotPassword')}}>Forgot password?</button>
                 </div>
                 {/* Submit button */}
                 <div className='flex w-full justify-center'>
-                  <button onClick={handleSubmit} className='flex w-full text-white items-center justify-center h-9 py-1 px-7 rounded-sm gap-2 bg-theme_semidark'>
+                  <button onClick={handleSubmit} className='flex w-full hover:bg-theme_normal text-white items-center justify-center h-9 py-1 px-7 rounded-sm gap-2 bg-theme_semidark'>
                     <Loader text='Sign in' isLoading={loading} />
                     </button>
                 </div>
