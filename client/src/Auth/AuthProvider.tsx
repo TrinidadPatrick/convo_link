@@ -4,6 +4,13 @@ import {io} from 'socket.io-client'
 import SocketStore from '../store/SocketStore';
 import onlineUserStore from '../store/OnlineUsersStore';
 
+interface AddressType{
+    province : string,
+    barangay : string,
+    city : string,
+    country : string
+}
+
 interface UserType {
     _id : string,
     firstname : string,
@@ -12,9 +19,10 @@ interface UserType {
     birthdate : Object,
     gender : string,
     profileImage : string,
-    Address : Object,
+    Address : AddressType,
     account_status : Object,
-    profile_status : string
+    profile_status : string,
+    userBio : string
 }
 
 interface stateContextType {

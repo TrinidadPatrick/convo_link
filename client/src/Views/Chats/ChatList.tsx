@@ -18,7 +18,7 @@ interface ProfileProps{
   borderRadius? : number
 }
 
-const ChatList : React.FC<conversationsProps> = ({conversations, userId, socket}) => {
+const ChatList : React.FC<conversationsProps> = ({conversations, userId, }) => {
   const navigate = useNavigate();
   const {_id, option} = useParams()
 

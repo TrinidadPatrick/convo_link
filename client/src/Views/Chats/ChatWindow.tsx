@@ -169,7 +169,6 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
             const conversationIndex = newConversations.findIndex((conversation : Conversation) => conversation?.conversationInfo?._id == result.data.conversationInfo._id)
             if(conversationIndex == -1)
             {
-                // console.log("Hello")
                 setConversations([...newConversations, result.data])
                 setConversation(result.data)
             }
@@ -296,7 +295,6 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
         socket?.on('message_notification', (data : any) => {
             if(data == 'newMessage')
             {
-                console.log(_id)
                 getConversations(10, 1, true)
             }
         })
@@ -375,7 +373,7 @@ const ChatWindow  = forwardRef<ChatWindowRef, Props>((props, ref) => {
             <div className='w-full flex justify-center'>
                 <button className='flex items-center justify-center' onClick={()=>setPage((prev)=> prev + 1)}>
                 {/* ()=>setPage((prev)=> prev + 1) */}
-                    <span className="icon-[fluent:arrow-down-16-filled] text-2xl text-gray-400">s</span>
+                    <span className="icon-[fluent:arrow-down-16-filled] text-sm pt-1 text-gray-400">load more</span>
                 </button>
             </div>
         {

@@ -34,7 +34,7 @@ const Header : React.FC<any> = () => {
                 <p className={`text-xs font-medium ${user?.profile_status == 'Offline' ? 'text-gray-600' : 'text-theme_semidark'}`}>{user?.profile_status}</p>  
             </div>
             <button onClick={()=>setShowDropdown(!showDropdown)} className='relative'>
-                <Userimage firstname={user?.firstname} lastname={user?.lastname} size={15} width={35} height={35} />
+                <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 border border-gray-400' firstname={user?.firstname} lastname={user?.lastname} size={15} width={35} height={35} />
                 {/* Dropdown */}
                 {
                     showDropdown &&
@@ -49,7 +49,7 @@ const Header : React.FC<any> = () => {
                         },
                         {
                             item : `My Profile`, 
-                            event: ()=>{}, fontSize: 12, fontColor: 'gray', fontWeight: 500,
+                            event: ()=>{navigate('/profile')}, fontSize: 12, fontColor: 'gray', fontWeight: 500,
                             icon : <span className="icon-[iconamoon--profile] text-gray-400"></span>
                         },
                         {
