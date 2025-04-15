@@ -7,39 +7,36 @@ import Userimage from '../../ReusableComponents/Userimage'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import onlineUserStore from '../../store/OnlineUsersStore'
 
-interface People{
+interface People {
   _id: string
-  firstname : string,
-  lastname : string,
-  profileImage : string,
-  userBio : string,
-  profile_status : string
+  firstname: string,
+  lastname: string,
+  profileImage: string,
+  userBio: string,
+  profile_status: string
 }
 
-interface Friendship{
+interface Friendship {
   _id: string,
-  participants : Array<string | undefined>,
-  status : string,
-  initiator : string
+  participants: Array<string | undefined>,
+  status: string,
+  initiator: string
 }
 
 
 
 const Friends = () => {
-    const {FriendRecommendation, setFriendRecommendation} = FriendRecommendationStore()
-    const {user} = useAuthContext()
-    const {onlineUsers} = onlineUserStore()
+  const { FriendRecommendation, setFriendRecommendation } = FriendRecommendationStore()
+  const { user } = useAuthContext()
+  const { onlineUsers } = onlineUserStore()
 
   return (
     <main className='w-full h-full flex flex-col bg-[#f9f9f9] overflow-hidden'>
-    <div className='flex gap-3 w-full h-full  p-3'>
-        {/* <div className='w-full hidden semiMd:block'>
-            <FriendLists />
-        </div> */}
+      <div className='flex gap-3 w-full h-full  p-3'>
         <div className='w-full '>
-            <FriendRecommendations  />
+          <FriendRecommendations />
         </div>
-    </div>
+      </div>
     </main>
   )
 }

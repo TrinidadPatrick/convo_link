@@ -1,5 +1,5 @@
-const {Router} = require("express");
-const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout } = require("./Controllers/userController");
+const { Router } = require("express");
+const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout, updateAddress } = require("./Controllers/userController");
 const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests, getFriends } = require("./Controllers/FriendshipController");
 const { getConversations, sendMessage, getConversationList, readConversation } = require("./Controllers/ConversationController");
 const { keepAlive } = require("./Controllers/KeepAliveController");
@@ -17,6 +17,7 @@ router.post("/forgotPassword", forgotPassword);
 router.post("/verifyFpyOTP", verifFpyOTP);
 router.patch("/resetPassword", resetPassword);
 router.post("/logout", logout);
+router.patch("/updateAddress", updateAddress)
 
 // Friendship route
 router.get("/getPeopleRecommendations", getPeopleRecommendations);
