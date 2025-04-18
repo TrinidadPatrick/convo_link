@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import SocketStore from '../../store/SocketStore'
 import { useAuthContext } from '../../Auth/AuthProvider'
 import bg from '../../utilities/images/Guest_bg.jpg'
@@ -23,6 +23,7 @@ interface ErrorType {
 }
 
 const UserProfile = () => {
+  const didRun = useRef(false);
   const { socket }: any = SocketStore()
   const { isAuthenticated, user } = useAuthContext()
   const [modalIsOpen, setIsOpen] = React.useState(false);
@@ -32,9 +33,9 @@ const UserProfile = () => {
     city: []
   });
   const [address, setAddress] = useState<Object>({
-    province: '',
-    barangay: '',
-    city: ''
+    province: {name : '', code : ''},
+    barangay: {name : '', code : ''},
+    city: {name : '', code : ''}
   })
   const [error, setError] = useState<ErrorType>({
     province: false,
@@ -66,8 +67,11 @@ const UserProfile = () => {
   }
 
   useEffect(() => {
-    getAddressOptions('', 'https://psgc.gitlab.io/api/provinces/', 'province')
-  }, [])
+    if(!user || addressOptions.province.length == 0)
+    {
+      getAddressOptions('', 'https://psgc.gitlab.io/api/provinces/', 'province')
+    }
+  }, [user, addressOptions])
 
   const handleSubmit = async () => {
     let hasError = false;
@@ -94,6 +98,7 @@ const UserProfile = () => {
 
   }
 
+  console.log('address')
 
   // useEffect(() => {
   //     // Check if socket is defined before attaching listeners
@@ -113,7 +118,6 @@ const UserProfile = () => {
   // Modal.setAppElement('#root');
 
   return (
-
     <div className='w-full h-full flex flex-col'>
       {/* Background 1 */}
       <div style={{ backgroundImage: `url(${bg})` }} className='w-full h-[250px] min-h-[250px] bg-[20%_55%] brightness-50 bg-cover bg-no-repeat'>
@@ -139,7 +143,7 @@ const UserProfile = () => {
             <span className="icon-[tdesign--location] text-gray-500 text-2xl"></span>
             {
               user?.Address ?
-                <p>{user?.Address.city}</p>
+                <p onClick={() => setIsOpen(true)} className='text-gray-500 underline cursor-pointer'>{user?.Address.barangay.name} {user?.Address.city.name}, {user.Address.province.name}</p>
                 :
                 <p onClick={() => setIsOpen(true)} className='text-gray-400 underline cursor-pointer hover:text-gray-300'>Setup Address</p>
             }
@@ -173,6 +177,8 @@ const UserProfile = () => {
                   value: prov.code,
                   label: prov.name,
                 }))}
+                defaultValue={{value : addressOptions?.province.find((prov) => prov.code == user?.Address.province.code)?.code
+                ,label : user?.Address.province.name}}
                 onChange={(e: any) => {
                   getAddressOptions(
                     e.value,
@@ -181,7 +187,7 @@ const UserProfile = () => {
                   ),
                     setAddress({
                       ...address,
-                      province: e.label
+                      province: {name : e.label, code : e.value}
                     })
                 }
 
@@ -202,6 +208,8 @@ const UserProfile = () => {
                   value: prov.code,
                   label: prov.name,
                 }))}
+                defaultValue={{value : addressOptions?.city.find((city) => city.code == user?.Address.city.code)?.code
+                  ,label : user?.Address.city.name}}
                 onChange={(e: any) => {
                   getAddressOptions(
                     e.value,
@@ -210,7 +218,7 @@ const UserProfile = () => {
                   ),
                     setAddress({
                       ...address,
-                      city: e.label
+                      city: {name : e.label, code : e.value}
                     })
                 }
                 }
@@ -231,10 +239,12 @@ const UserProfile = () => {
                   value: prov.code,
                   label: prov.name,
                 }))}
+                defaultValue={{value : addressOptions?.barangay.find((brgy) => brgy.code == user?.Address.barangay.code)?.code
+                  ,label : user?.Address.barangay.name}}
                 onChange={(e: any) => {
                   setAddress({
                     ...address,
-                    barangay: e.label
+                    barangay: {name : e.label, code : e.value}
                   })
                 }
                 }

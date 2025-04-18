@@ -5,10 +5,9 @@ import SocketStore from '../store/SocketStore';
 import onlineUserStore from '../store/OnlineUsersStore';
 
 interface AddressType{
-    province : string,
-    barangay : string,
-    city : string,
-    country : string
+    province : {name : string, code : string},
+    barangay : {name : string, code : string},
+    city : {name : string, code : string}
 }
 
 interface UserType {
@@ -68,9 +67,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
        if(!isSocketConnected)
        {
         const socket : any = io(
-            // 'http://localhost:5000'
-            // 'http://192.168.100.5:5000'
-            // 'https://convo-link.onrender.com/'
             import.meta.env.VITE_SOCKET_URL
             )
         isSocketConnected = true
@@ -78,7 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         setProfileStatus({_id : user._id, status : 'Online'}, socket)
         setTimeout(() => {
             addUserToConnectedUsers(user._id, socket)
-        }, 500);
+        }, 200);
         
        }
 
@@ -106,13 +102,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       }
 
     useEffect(() => {
-        getUser()
+        if(!user)
+        {
+            getUser()
+        }
     }, [])
 
     useEffect(() => {
-        socket?.on('onlineUsers', (users : Array<any>) => {
-            setOnlineUsers(users)
-        });
+        if(socket)
+        {
+            socket?.on('onlineUsers', (users : Array<any>) => {
+                setOnlineUsers(users)
+            });
+        }
+        
     }, [socket])
 
     
