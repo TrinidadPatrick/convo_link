@@ -147,7 +147,7 @@ module.exports.getFriendRequests = async (req, res) => {
 module.exports.getFriends = async (req,res) => {
     const searchValue = req.query.searchValue;
     const userId = req.user._id;
-    const friendShips = await Friendship.find({participants : {$in : [userId]}, status : 'accepted'}).select('_id participants status initiator').limit(50);
+    const friendShips = await Friendship.find({participants : {$in : [userId]}, status : 'accepted'}).select('_id participants status initiator')
     
     const friendIds = friendShips.flatMap(friendship => 
         friendship.participants.filter(participant => 
@@ -162,7 +162,7 @@ module.exports.getFriends = async (req,res) => {
             { firstname: { $regex: searchValue, $options: 'i' } },
             { lastname: { $regex: searchValue, $options: 'i' } }
         ]
-    }).select('_id firstname lastname profileImage userBio profile_status')
+    }).select('_id firstname lastname profileImage userBio profile_status Address hobbies')
     return res.status(200).json({ message: 'Friends fetched', friends : friends });
 }
 

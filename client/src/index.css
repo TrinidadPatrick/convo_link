@@ -12,6 +12,12 @@
     
  }
 
+ input:-webkit-autofill {
+  @apply bg-white text-black;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: black !important;
+}
+
  textarea {
     scrollbar-width: none; /* For Firefox */
     -ms-overflow-style: none; /* For Internet Explorer and Edge */

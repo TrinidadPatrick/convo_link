@@ -301,8 +301,8 @@ module.exports.getUserProfile = async (req, res) => {
   const user_id = req.user._id;
   if (user_id) {
     const user = await User.findById(user_id, { password: 0 });
-    const { firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, userBio, _id } = user;
-    return res.status(200).json({ message: 'User profile fetched', user: { firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, userBio, _id } });
+    const { firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, userBio, _id, hobbies } = user;
+    return res.status(200).json({ message: 'User profile fetched', user: { firstname, lastname, email, birthdate, gender, profileImage, Address, account_status, profile_status, userBio, hobbies, _id } });
   }
   else {
     return res.status(400).json({ message: 'User not found' });
@@ -321,5 +321,155 @@ module.exports.updateAddress = async (req, res) => {
   }
   else {
     console.log("No")
+  }
+}
+
+module.exports.changeEmail = async (req, res) => {
+  const data = req.body;
+  const { email, password } = data;
+  const userId = req.user._id;
+
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // If user is in the database
+  if (user) {
+   const isValidPassword = await bcrypt.compare(password, user.password);
+   if(isValidPassword)
+   {
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+    await sendOTPEmail(email, otp);
+    await User.findByIdAndUpdate(user._id, { email: email.toLowerCase(), otp: otp, otpExpiry: otpExpiry });
+    return res.status(200).json({ message: 'OTP sent to \n' + email });
+    // user.email = email.toLowerCase();
+    // await user.save();
+    // return res.status(200).json({ message: 'Email changed' });
+   }
+   else
+   {
+    return res.status(401).json({ message: 'Invalid Password' });
+   }
+  }
+}
+
+module.exports.verifyChangeEmailOTP = async (req, res) => {
+  const data = req.body;
+  const { otp, email } = data;
+  const userId = req.user._id;
+
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // if user is in the database
+  if (user) {
+    if (user.otp === otp && user.otpExpiry > Date.now()) {
+      const newEmail = user.email;
+      await User.findByIdAndUpdate(user._id, { email_verified: true, otp: null, otpExpiry: null });
+      return res.status(200).json({ message: 'Email verified', newEmail });
+    }
+    else {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+  }
+}
+
+module.exports.changePassword = async (req, res) => {
+  const data = req.body;
+  const { currentPassword, newPassword, confirmNewPassword } = data;
+  const userId = req.user._id;
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // If user is in the database
+  if (user) {
+   const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+   if(isValidPassword)
+   {
+    if(newPassword != confirmNewPassword)
+    {
+      return res.status(401).json({ message: 'Passwords do not match' });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    return res.status(200).json({ message: 'Password updated' });
+   }
+   else
+   {
+    return res.status(401).json({ message: 'Invalid Password' });
+   }
+  }
+}
+
+module.exports.changeProfileImage = async (req, res) => {
+  const data = req.body;
+  const { image } = data;
+  const userId = req.user._id;
+
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // If user is in the database
+  if (user) {
+    user.profileImage = image;
+    await user.save();
+    return res.status(200).json({ message: 'Profile image updated' });
+  }
+}
+
+module.exports.updateBio = async (req, res) => {
+  const data = req.body;
+  const { bio } = data;
+  const userId = req.user._id;
+
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // If user is in the database
+  if (user) {
+    user.userBio = bio;
+    await user.save();
+    return res.status(200).json({ message: 'Bio updated' });
+  }
+}
+
+module.exports.updateHobbies = async (req, res) => {
+  const data = req.body;
+  const { hobbies } = data;
+  const userId = req.user._id;
+
+  const user = await User.findOne({ _id: userId });
+
+  // If user is not in the database
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  // If user is in the database
+  if (user) {
+    user.hobbies = hobbies;
+    await user.save();
+    return res.status(200).json({ message: 'Hobbies updated' });
   }
 }

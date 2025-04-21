@@ -7,15 +7,16 @@ interface Props{
     size : number,
     firstname? : string | null,
     lastname? : string | null,
-    className? : string
+    className? : string,
+    image? : string
 }
 
-const Userimage = ({width, height, size, firstname, lastname, className} : Props) => {
+const Userimage = ({width, height, size, firstname, lastname, className, image} : Props) => {
     const {user} = useAuthContext();
   return (
     <div>
         {
-            user?.profileImage ? <img src={user.profileImage} alt="profile-image" className={`w-${width} h-${height} rounded-full`} />
+            image ? <img src={image} alt="profile-image" className={className} />
             :
             <div style={{width: `${width}px`, height: `${height}px`}} className={className}>
                 <p className='text-gray-500' style={{fontSize: `${size}px`}}>{firstname && firstname[0]}</p>

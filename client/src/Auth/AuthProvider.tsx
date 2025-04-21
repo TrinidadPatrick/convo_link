@@ -21,14 +21,16 @@ interface UserType {
     Address : AddressType,
     account_status : Object,
     profile_status : string,
-    userBio : string
+    userBio : string,
+    hobbies : Array<string>
 }
 
 interface stateContextType {
     user : UserType | null,
     isAuthenticated : boolean | null,
     setUser: (user : UserType | null) => void,
-    setIsAuthenticated: (isAuthenticated : boolean | null) => void
+    setIsAuthenticated: (isAuthenticated : boolean | null) => void,
+    getUser: () => void
 }
 
 interface AuthProviderProps {
@@ -45,6 +47,7 @@ const stateContext = createContext<stateContextType>({
     isAuthenticated : null,
     setUser: () => {},
     setIsAuthenticated: () => {},   
+    getUser: () => {}
 })
 
 let isSocketConnected : Boolean = false
@@ -121,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     
 
     return (
-        <stateContext.Provider value={{user, isAuthenticated, setUser, setIsAuthenticated}}>
+        <stateContext.Provider value={{user, isAuthenticated, setUser, setIsAuthenticated, getUser}}>
             {children}
         </stateContext.Provider>
     )

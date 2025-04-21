@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react'
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef, HtmlHTMLAttributes } from 'react'
 import FriendsStore from '../../store/FriendsStore'
 import { useParams } from 'react-router-dom'
 import http from '../../../http'
@@ -8,6 +8,7 @@ import SocketStore from '../../store/SocketStore'
 import ConversationStore from '../../store/ConversationStore'
 import onlineUserStore from '../../store/OnlineUsersStore'
 import { useLocation } from 'react-router-dom'
+import EmojiPicker from 'emoji-picker-react';
 
 interface ConversationInfo {
     headId?: string | undefined,
@@ -45,7 +46,9 @@ interface Message {
 }
 
 interface Props {
-    handleGetConversations: () => void
+    handleGetConversations: () => void,
+    showChatWindow : boolean,
+    setShowChatWindow : (showChatWindow : boolean) => void
 }
 
 export type ChatWindowRef = {
@@ -53,7 +56,7 @@ export type ChatWindowRef = {
 };
 
 const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
-    const location = useLocation();
+    const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
     const { socket } = SocketStore()
     const { onlineUsers } = onlineUserStore();
     const { Conversations, setConversations } = ConversationStore() //This is the list of messages not just conversation
@@ -306,9 +309,15 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
                         :
                         <>
                             <div className='h-full flex gap-2'>
+                                {/* Back button */}
+                                <div className='h-full flex flex-col justify-center md:hidden'>
+                                    <button onClick={()=>props.setShowChatWindow(false)} className='px-2'>
+                                    <span className="icon-[weui--back-filled] text-xl text-gray-700"></span>
+                                    </button>
+                                </div>
                                 {/* Image */}
                                 <div className='flex h-full'>
-                                    <Userimage className='flex justify-center items-center rounded-full bg-gray-100' firstname={conversation?.user?.firstname} lastname={conversation?.user?.lastname} size={25} width={45} height={44} />
+                                    <Userimage className='flex w-[40px] aspect-square object-cover justify-center items-center rounded-full bg-gray-100' firstname={conversation?.user?.firstname} lastname={conversation?.user?.lastname} size={25} width={45} height={44} image={conversation?.user?.profileImage} />
                                 </div>
                                 {/* Name and bio */}
                                 <div className='flex flex-col  '>
@@ -392,11 +401,18 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
                 <div className='w-full h-full items-center flex relative'>
                     <textarea onKeyDown={(e) => { if (e.key == 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }} value={messageContent} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessageContent(e.target.value)} rows={1} placeholder="Type a message" className='w-full py-3 resize-none rounded-md bg-slate-100 pt-2.5 ps-3 pe-3 text-gray-700 font-normal text-base ' />
                     <div className='absolute  right-4 top-2.5 items-center  justify-evenly flex gap-2'>
-                        <button className=' flex items-center'>
+                        {/* <input ref={fileRef} type='file' name='' id='' className='hidden' onChange={(e)=>{}} />
+                        <button onClick={()=>{fileRef.current?.click()}} className=' flex items-center'>
                             <span className="icon-[iconoir--attachment] text-gray-500 text-lg"></span>
-                        </button>
-                        <button className=' flex items-center'>
-                            <span className="icon-[iconoir--emoji] text-gray-500 text-lg"></span>
+                        </button> */}
+                        <button className=' flex items-center relative'>
+                            <span onClick={()=>{setShowEmojiPicker(!showEmojiPicker)}} className="icon-[iconoir--emoji] text-gray-500 text-lg cursor-pointer"></span>
+                            {
+                                showEmojiPicker &&
+                                <div className='absolute  right-2 bottom-10 z-50'>
+                                    <EmojiPicker onEmojiClick={(e : any) =>{setMessageContent(messageContent + e.emoji)}}  />
+                                </div>
+                            }
                         </button>
                         <div className='w-[1px] h-7 bg-gray-400'></div>
                         <button onClick={() => sendMessage()} className='flex items-center rotate-45'>

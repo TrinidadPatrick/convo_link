@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import http from '../../../http'
 import Friends from './Friends'
 import FriendRecommendationStore from '../../store/FriendRecommendationStore'
@@ -7,6 +7,7 @@ import { useAuthContext } from '../../Auth/AuthProvider'
 import onlineUserStore from '../../store/OnlineUsersStore'
 import FriendsStore from '../../store/FriendsStore'
 import { useNavigate } from 'react-router-dom'
+import ShowUserInfo from '../../ReusableComponents/ShowUserInfo'
 
 interface People {
   _id: string
@@ -20,10 +21,11 @@ interface People {
 
 const FriendLists = () => {
   const { user } = useAuthContext();
+  let hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { onlineUsers } = onlineUserStore();
   const { Friends, setFriends } = FriendsStore();
-
+  const [hoveredUser, setHoveredUser] = useState<any>(null)
   const [searchValue, setSearchValue] = useState<string>('')
 
   const getFriends = async (searchValue: string) => {
@@ -41,9 +43,26 @@ const FriendLists = () => {
     }
   }, [])
 
+  const handleHover = (user: any, isOnline: boolean) => {
+    // Cancel any previous timeout
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+    }
+  
+    // Start a new one
+    hoverTimeout.current = setTimeout(() => {
+      setHoveredUser({ userInfo: user, isOnline });
+    }, 2000);
+  };
+
+  const handleRemoveHover = () => {
+      setHoveredUser(null)
+  }
+
 
   return (
     <div className='flex flex-col gap-3 p-5 bg-white w-full shadow rounded h-full'>
+      {hoveredUser && <ShowUserInfo user={hoveredUser} handleRemoveHover={handleRemoveHover} />}
       <div className='w-full'>
         <h1 className='text-xl font-medium text-gray-600'>My Friends</h1>
       </div>
@@ -80,9 +99,9 @@ const FriendLists = () => {
         {
           // People recommendations
           Friends?.map((people: People, index: number) => {
-            const isOnline = onlineUsers?.some((user: any) => user.user_id == people?._id)
+            const isOnline = onlineUsers?.some((user: any) => user.user_id == people?._id) || false
             return (
-              <div key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between '>
+              <div onMouseEnter={()=>{handleHover(people, isOnline)}} key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between cursor-pointer '>
                 {/* Profile image */}
                 <div className={`flex w-fit mx-auto rounded-full ${isOnline && 'border-[2px] border-green-500'} relative justify-center items-center`}>
                   {/* Online indicator */}
@@ -91,7 +110,7 @@ const FriendLists = () => {
                     <div className='absolute border-2 border-white top-0 right-0 h-5 w-5 bg-green-500 rounded-full'>
                     </div>
                   }
-                  <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 ' firstname={people?.firstname} lastname={people?.lastname} size={30} width={85} height={85} />
+                  <Userimage className='flex w-[85px] aspect-square object-cover rounded-full items-center justify-center bg-gray-200 ' firstname={people?.firstname} lastname={people?.lastname} size={30} width={85} height={85} image={people?.profileImage} />
                 </div>
                 {/* Name and bio */}
                 <div className='flex flex-col justify-start h-full'>

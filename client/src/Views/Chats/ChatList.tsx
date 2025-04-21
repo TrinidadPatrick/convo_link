@@ -7,6 +7,8 @@ interface conversationsProps{
     conversations : Array<any>
     userId : string
     socket : any
+    showChatWindow : boolean,
+    setShowChatWindow : (showChatWindow : boolean) => void
 }
 
 interface ProfileProps{
@@ -18,7 +20,7 @@ interface ProfileProps{
   borderRadius? : number
 }
 
-const ChatList : React.FC<conversationsProps> = ({conversations, userId, }) => {
+const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShowChatWindow }) => {
   const navigate = useNavigate();
   const {_id, option} = useParams()
 
@@ -48,8 +50,13 @@ const ChatList : React.FC<conversationsProps> = ({conversations, userId, }) => {
 
   return (
     <main className='w-full h-full flex flex-col gap-3 bg-white rounded p-2'>
-      <div>
+      <div className='w-full flex justify-between'>
         <h2 className='text-xl font-semibold text-theme_semidark'>Chats</h2>
+
+        <button onClick={()=>{navigate('/friends')}} className='text-gray-600 hover:text-gray-500 text-sm flex gap-1 items-center'>
+          Friends
+          <span className="icon-[la--user-friends] text-lg"></span>
+        </button>
       </div>
       {/* Search bar */}
       <div className='flex w-full items-center justify-between'>
@@ -84,12 +91,9 @@ const ChatList : React.FC<conversationsProps> = ({conversations, userId, }) => {
             
             const isSentByUser = conversation.lastMessage.messageId.senderId === userId
             return (
-              <div onClick={()=>{handleSelectConversation(option, recipient.userId._id)}} key={index} className={`flex ${isSelected ? 'bg-gray-100 border-l-4 border-theme_normal' : 'bg-white'} py-3 px-2 rounded gap-2 cursor-pointer items-center`}>
-                <div className='w-10 h-10 rounded-full'>
-                   {
-                    recipient.userId.profileImage ? <img src={recipient.userId.profileImage} alt="profile-image" className='w-full h-full object-cover' />
-                    : <RenderProfile width={40} height={39} borderRadius={100} size={20} firstname={recipient.userId.firstname} lastname={recipient.userId.lastname} />
-                   }
+              <div onClick={()=>{handleSelectConversation(option, recipient.userId._id);setShowChatWindow(true)}} key={index} className={`flex ${isSelected ? 'bg-gray-100 border-l-4 border-theme_normal' : 'bg-white'} py-3 px-2 rounded gap-2 cursor-pointer items-center`}>
+                <div className=''>
+                   <Userimage className='flex w-[50px] aspect-square object-cover justify-center items-center rounded-full bg-gray-100' firstname={recipient.userId.firstname} lastname={recipient.userId.lastname} size={25} width={40} height={40} image={recipient.userId.profileImage} />
                 </div>
                 <div className='flex flex-col w-full gap-1'>
                   <p className='text-sm font-medium text-gray-800'>{recipient.userId.firstname} {recipient.userId.lastname}</p>

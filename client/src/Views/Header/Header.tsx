@@ -34,7 +34,7 @@ const Header : React.FC<any> = () => {
                 <p className={`text-xs font-medium ${user?.profile_status == 'Offline' ? 'text-gray-600' : 'text-theme_semidark'}`}>{user?.profile_status}</p>  
             </div>
             <button onClick={()=>setShowDropdown(!showDropdown)} className='relative'>
-                <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 border border-gray-400' firstname={user?.firstname} lastname={user?.lastname} size={15} width={35} height={35} />
+                <Userimage className='flex w-[40px] object-cover rounded-full items-center justify-center aspect-square bg-gray-200 border border-gray-400' firstname={user?.firstname} lastname={user?.lastname} size={15} width={35} height={35} image={user?.profileImage} />
                 {/* Dropdown */}
                 {
                     showDropdown &&

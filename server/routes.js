@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout, updateAddress } = require("./Controllers/userController");
+const { createUser, verifyOTP, resendOtp, login, getUserProfile, forgotPassword, verifFpyOTP, resetPassword, logout, updateAddress, changeEmail, verifyChangeEmailOTP, changePassword, changeProfileImage, updateBio, updateHobbies } = require("./Controllers/userController");
 const { getPeopleRecommendations, requestFriendship, getFriendships, respondFriendship, getPeopleRecommendations_v2, getFriendRequests, getFriends } = require("./Controllers/FriendshipController");
 const { getConversations, sendMessage, getConversationList, readConversation } = require("./Controllers/ConversationController");
 const { keepAlive } = require("./Controllers/KeepAliveController");
@@ -18,6 +18,13 @@ router.post("/verifyFpyOTP", verifFpyOTP);
 router.patch("/resetPassword", resetPassword);
 router.post("/logout", logout);
 router.patch("/updateAddress", updateAddress)
+router.patch("/changeEmail", changeEmail)
+router.patch("/verifyChangeEmailOTP", verifyChangeEmailOTP)
+router.patch("/changePassword", changePassword)
+router.patch("/changeProfileImage", changeProfileImage)
+router.patch("/updateBio", updateBio)
+router.patch("/updateHobbies", updateHobbies)
+
 
 // Friendship route
 router.get("/getPeopleRecommendations", getPeopleRecommendations);

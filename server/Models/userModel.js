@@ -75,11 +75,13 @@ const userSchema = new mongoose.Schema({
     },
     otp : {
         type : String,
-        required : true
     },
     otpExpiry : {
         type : Date,
-        required : true
+    },
+    hobbies : {
+        type : Array,
+        default : []
     }
 });
 

@@ -9,6 +9,15 @@ const Main = () => {
   const {socket} = SocketStore()
   const [conversations, setConversations] = useState<Array<any>>([])
   const [userId, setUserId] = useState<string>('')
+  const [showChatWindow, setShowChatWindow] = useState<boolean>(true)
+  const [width, setWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize); // Cleanup
+  }, []);
 
   const getConversations = async () => {
     try {
@@ -20,6 +29,9 @@ const Main = () => {
     }
   }
 
+  const handleSetShowChatWindow = (showChatWindow : boolean) => {
+    setShowChatWindow(showChatWindow)
+  }
 
 
   useEffect(() => {  
@@ -38,12 +50,28 @@ const Main = () => {
     
   return (
     <div className='w-full h-[100svh] overflow-hidden bg-[#f9f9f9] flex gap-2 p-2'>
-        <section className='w-[400px] bg-white hidden sm:block'>
-            <ChatList socket={socket} conversations={conversations} userId={userId}/>
+        {(width > 768 || (width < 768 && !showChatWindow)) && (
+        <section className="w-full md:w-[400px] bg-white">
+          <ChatList
+            setShowChatWindow={handleSetShowChatWindow}
+            showChatWindow={showChatWindow}
+            socket={socket}
+            conversations={conversations}
+            userId={userId}
+          />
         </section>
-        <section className='flex-1 bg-white shadow-sm'>
-            <ChatWindow handleGetConversations={getConversations} ref={childRef} />
+        )}
+
+        {(width > 768 || (width < 768 && showChatWindow)) && (
+        <section className="flex-1 bg-white shadow-sm">
+          <ChatWindow
+            showChatWindow={showChatWindow}
+            setShowChatWindow={handleSetShowChatWindow}
+            handleGetConversations={getConversations}
+            ref={childRef}
+          />
         </section>
+      )}
         
     </div>
   )
