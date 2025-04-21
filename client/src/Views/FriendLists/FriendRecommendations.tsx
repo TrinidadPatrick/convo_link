@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import http from '../../../http'
 import FriendRecommendationStore from '../../store/FriendRecommendationStore'
 import Userimage from '../../ReusableComponents/Userimage'
@@ -7,6 +7,7 @@ import onlineUserStore from '../../store/OnlineUsersStore'
 import FriendsStore from '../../store/FriendsStore'
 import FriendRequestStore from '../../store/FriendRequestStore'
 import FriendLists from './FriendLists'
+import ShowUserInfo from '../../ReusableComponents/ShowUserInfo'
 
 interface People {
   _id: string
@@ -33,7 +34,8 @@ interface RecommendationProps {
 const FriendRecommendations = () => {
   const { FriendRecommendation, setFriendRecommendation } = FriendRecommendationStore();
   const { FriendRequests, setFriendRequests } = FriendRequestStore();
-
+  const [hoveredUser, setHoveredUser] = useState<any>(null)
+  let hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const [searchValue, setSearchValue] = useState<string>('')
   const [option, setOption] = useState<string>('Recommendations')
   const [showMobileSearch, setShowMobileSearch] = useState<boolean>(false)
@@ -45,6 +47,18 @@ const FriendRecommendations = () => {
     setFriendRecommendation([...FriendRecommendation])
     try {
       const result = await http.post('requestFriendship', { userId }, { withCredentials: true })
+    } catch (error: any) {
+      console.log(error)
+    }
+  }
+
+  const handleCancelFriendship = async (_id: string) => {
+    try {
+      const result = await http.delete('cancelFriendship?_id='+_id, { withCredentials: true })
+      if(result.status == 200)
+      {
+        getRecommendations_v2('')
+      }
     } catch (error: any) {
       console.log(error)
     }
@@ -78,6 +92,7 @@ const FriendRecommendations = () => {
   const getRecommendations_v2 = async (searchValue: string) => {
     try {
       const result = await http.get('getPeopleRecommendations_v2?searchValue=' + searchValue, { withCredentials: true })
+      console.log(result.data.peopleRecommendation)
       setFriendRecommendation(result.data.peopleRecommendation)
     } catch (error: any) {
       console.log(error)
@@ -101,8 +116,31 @@ const FriendRecommendations = () => {
     }
   }, [])
 
+  const handleHover = (user: any, isOnline: boolean) => {
+    // Cancel any previous timeout
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+    }
+  
+    // Start a new one
+    hoverTimeout.current = setTimeout(() => {
+      setHoveredUser({ userInfo: user, isOnline });
+    }, 1200);
+  };
+
+  const handleRemoveHover = () => {
+      setHoveredUser(null)
+  }
+
+  const handleHoverLeave = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+    }
+  };
+
   return (
     <div className='flex flex-col gap-3 p-5 bg-[#f9f9f9] shadow w-full h-[100svh]'>
+      {hoveredUser && <ShowUserInfo user={hoveredUser} handleRemoveHover={handleRemoveHover} />}
       <div className='w-full  relative flex justify-between items-center'>
         <h1 className={`text-xl ${showMobileSearch ? ' opacity-0' : 'opacity-100'} transition-all font-medium text-gray-600`}>Explore new friends</h1>
         <div className='flex gap-3 Base:hidden items-center'>
@@ -144,22 +182,30 @@ const FriendRecommendations = () => {
 
       <div className='flex gap-3'>
         {/* Search field */}
-        <div className="relative hidden Base:block w-full sm:w-fit border rounded bg-white">
+        <div className="relative hidden Base:flex w-full sm:w-fit border rounded bg-white">
           <input
+          value={searchValue}
+            onKeyDown={(e) => { if (e.key == 'Enter') { searchValue != '' && getRecommendations(searchValue) }}}
             onChange={(e: any) => setSearchValue(e.target.value)}
             placeholder="Type a name"
-            className=" bg-[#f8f8f8] border-gray-300 px-2 py-2.5 rounded w-full sm:w-72 transition-all outline-none"
+            className=" bg-white border-gray-300 px-2 py-2.5 rounded w-full sm:w-72 transition-all outline-none"
             name="search"
             type="text"
           />
-          <button onClick={() => {
-            if (option == 'friendRequests') {
-              getFriendRequests(searchValue)
-            }
-            else {
-              getRecommendations(searchValue)
-            }
-          }}>
+            {
+              searchValue != '' ?
+              <button onClick={()=>{setSearchValue('');getRecommendations_v2('')}} className='h-full px-2 pt-0 bg-transparent flex justify-center items-center'>
+              <span className="icon-[line-md--remove] hover:text-gray-500 text-xl"></span>
+              </button>
+              :
+              <button onClick={() => {
+                if (option == 'friendRequests') {
+                  searchValue != '' && getFriendRequests(searchValue)
+                }
+                else {
+                  searchValue != '' && getRecommendations(searchValue)
+                }
+              }}>
             <svg
               className="size-6 absolute top-2.5 right-3 text-gray-500"
               stroke="currentColor"
@@ -174,7 +220,10 @@ const FriendRecommendations = () => {
                 strokeLinecap="round"
               ></path>
             </svg>
-          </button>
+            </button>
+            }
+            
+            
         </div>
 
         <div className='flex gap-3 justify-center items-center'>
@@ -187,21 +236,22 @@ const FriendRecommendations = () => {
           option == 'friendRequests' ?
             // Pending requests
             FriendRequests?.map((people: i_FriendRequests, index: number) => {
+              console.log(people)
               return (
-                <div key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[260px] flex flex-col gap-3 overflow-hidden justify-between '>
+                <div key={index} className='px-2 pt-5 cursor-pointer pb-2 border bg-white rounded-lg shadow w-full h-[260px] flex flex-col gap-3 overflow-hidden justify-between '>
                   {/* Profile image */}
-                  <div className='flex w-full justify-center items-center'>
+                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people.initiator, false)}} className='flex w-full justify-center items-center'>
                     <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 shadow-lg' firstname={people?.initiator.firstname} lastname={people?.initiator.lastname} size={30} width={80} height={80} />
                   </div>
                   {/* Name and bio */}
-                  <div className='flex flex-col justify-start h-full'>
+                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people.initiator, false)}} className='flex flex-col justify-start h-full'>
                     <h1 className='text-[1.1rem] text-center font-medium text-gray-800 line-clamp-1'>{people.initiator.firstname} {people.initiator.lastname}</h1>
                     <p className={`text-[0.85rem] line-clamp-2 leading-3 text-ellipsis overflow-hidden ${people?.initiator.userBio ? "text-gray-500" : "text-gray-300"} text-center `}>{people.initiator.userBio || "No Bio"}</p>
                   </div>
                   {/* Add button */}
                   <div className='flex w-full justify-center'>
                     <div className='flex flex-col w-full gap-2'>
-                      <button onClick={() => handleRespondFriendship(people?._id, "accepted")} className='flex bg-theme_normal items-center justify-center py-1.5 px-2 rounded gap-2 '>
+                      <button onClick={() => handleRespondFriendship(people?._id, "accepted")} className='flex bg-theme_normal hover:bg-theme_semilight items-center justify-center py-1.5 px-2 rounded gap-2 '>
                         <p className='text-white text-sm'>Accept</p>
                       </button>
                       <button onClick={() => handleRespondFriendship(people?._id, "rejected")} className='flex items-center justify-center py-1.5 px-7 rounded gap-2 '>
@@ -216,15 +266,14 @@ const FriendRecommendations = () => {
             :
             // People recommendations
             FriendRecommendation?.map((people: People, index: number) => {
-
               return (
-                <div key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between '>
+                <div key={index} className='px-2 cursor-pointer pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between '>
                   {/* Profile image */}
-                  <div className='flex w-full justify-center items-center'>
+                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, false)}} className='flex w-full justify-center items-center'>
                     <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 shadow-lg' firstname={people?.firstname} lastname={people?.lastname} size={30} width={80} height={80} />
                   </div>
                   {/* Name and bio */}
-                  <div className='flex flex-col justify-start h-full'>
+                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, false)}} className='flex flex-col justify-start h-full'>
                     <h1 className='text-[1.1rem] text-center font-medium text-gray-800 line-clamp-1'>{people.firstname} {people.lastname}</h1>
                     <p className={`text-[0.85rem] line-clamp-2 leading-3 text-ellipsis overflow-hidden ${people?.userBio ? "text-gray-500" : "text-gray-300"} text-center `}>{people.userBio || "No Bio"}</p>
                   </div>
@@ -234,14 +283,14 @@ const FriendRecommendations = () => {
                     {
                       // If the people id is in the friendships array and user is initiator meaning a request is already sent
                       people?.hasSentRequest ?
-                        <button onClick={() => handleAddFriendship(people?._id)}
-                          className='flex w-full text-sm items-center justify-center py-1.5  rounded gap-2 bg-theme_semilight bg-opacity-20 '
+                        <button onClick={() => handleCancelFriendship(people?._id)}
+                          className='flex w-full text-sm items-center justify-center py-1.5  rounded gap-2 bg-theme_semilight hover:bg-theme_light bg-opacity-20 '
                         >
                           <p className='font-medium text-theme_normal'>Cancel</p>
                         </button>
                         :
                         <div className='flex flex-col gap-1.5 w-full'>
-                          <button onClick={() => handleAddFriendship(people?._id)} className='flex text-sm w-full bg-theme_normal items-center justify-center py-1.5 px-2 rounded gap-2 '>
+                          <button onClick={() => handleAddFriendship(people?._id)} className='flex text-sm w-full bg-theme_normal hover:bg-theme_semilight items-center justify-center py-1.5 px-2 rounded gap-2 '>
                             <p className='text-white font-normal'>Request friendship</p>
                           </button>
                         </div>

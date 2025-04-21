@@ -24,6 +24,15 @@ export default {
         xs: "400px",
         xxs: "300px",
       },
+      keyframes: {
+        'teams-curtain': {
+          '0%': { opacity: 0, transform: 'translateY(-20%) scale(0.98)' },
+          '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+        },
+      },
+      animation: {
+        'teams-curtain': 'teams-curtain 0.35s ease-out forwards',
+      },
     },
   },
   plugins: [

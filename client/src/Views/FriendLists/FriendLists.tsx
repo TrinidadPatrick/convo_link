@@ -52,12 +52,18 @@ const FriendLists = () => {
     // Start a new one
     hoverTimeout.current = setTimeout(() => {
       setHoveredUser({ userInfo: user, isOnline });
-    }, 2000);
+    }, 1200);
   };
 
   const handleRemoveHover = () => {
       setHoveredUser(null)
   }
+
+  const handleHoverLeave = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+    }
+  };
 
 
   return (
@@ -101,7 +107,7 @@ const FriendLists = () => {
           Friends?.map((people: People, index: number) => {
             const isOnline = onlineUsers?.some((user: any) => user.user_id == people?._id) || false
             return (
-              <div onMouseEnter={()=>{handleHover(people, isOnline)}} key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between cursor-pointer '>
+              <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, isOnline)}} key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between cursor-pointer '>
                 {/* Profile image */}
                 <div className={`flex w-fit mx-auto rounded-full ${isOnline && 'border-[2px] border-green-500'} relative justify-center items-center`}>
                   {/* Online indicator */}

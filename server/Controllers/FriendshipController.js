@@ -8,7 +8,7 @@ module.exports.getPeopleRecommendations = async (req,res) => {
     if (!searchValue) {
     // Fetch default recommendations (e.g., random users, popular users, etc.)
     peopleRecommendation = await User.find({ _id: { $ne: req.user._id } })
-        .select('_id firstname lastname profileImage userBio profile_status')
+        .select('_id firstname lastname profileImage userBio profile_status Address hobbies')
         .limit(50);
     } else {
     // Perform the search query
@@ -19,7 +19,7 @@ module.exports.getPeopleRecommendations = async (req,res) => {
         { lastname: { $regex: searchValue, $options: 'i' } }
         ]
     })
-    .select('_id firstname lastname profileImage userBio profile_status')
+    .select('_id firstname lastname profileImage userBio profile_status Address hobbies')
     .limit(50);
     }
     return res.status(200).json({ message: 'People recommendations fetched', peopleRecommendation });    
@@ -66,13 +66,12 @@ module.exports.getPeopleRecommendations_v2 = async (req, res) => {
 
             const excludeIds = [...new Set([...friendIds, ...acceptRequestIds])];
 
-
         // Fetch users who are not friends and who have received requests
         if (!searchValue) {
             result = await User.find({
                 _id: { $ne: req.user._id, $nin: excludeIds }
                 
-            }).select('_id firstname lastname profileImage userBio profile_status')
+            }).select('_id firstname lastname profileImage userBio profile_status Address hobbies')
             .limit(50);
              peopleRecommendation = result.map((person)=> {
                 return {
@@ -90,7 +89,7 @@ module.exports.getPeopleRecommendations_v2 = async (req, res) => {
                     { lastname: { $regex: searchValue, $options: 'i' } }
                 ]
             })
-            .select('_id firstname lastname profileImage userBio profile_status')
+            .select('_id firstname lastname profileImage userBio profile_status Address hobbies')
             .limit(50);
              peopleRecommendation = result.map((person)=> {
                 return {
@@ -114,7 +113,7 @@ module.exports.getFriendRequests = async (req, res) => {
              friendRequests = await Friendship.find({
                 initiator : {$ne : req.user._id},
                 status : 'pending'
-            }).populate("initiator", "firstname lastname profileImage userBio profile_status")
+            }).populate("initiator", "firstname lastname profileImage userBio profile_status Address hobbies")
             .limit(50);
         }
         else
@@ -133,7 +132,7 @@ module.exports.getFriendRequests = async (req, res) => {
                 initiator: { $ne: req.user._id },
                 status: 'pending',
                 participants: { $in: userIds } // Use $in to match any of the user IDs
-            }).populate("initiator", "firstname lastname profileImage userBio profile_status")
+            }).populate("initiator", "firstname lastname profileImage userBio profile_status Address hobbies")
             .limit(50);
         }
        
@@ -185,6 +184,23 @@ module.exports.respondFriendship = async (req,res) => {
     {
         await Friendship.findByIdAndUpdate(friendship._id, {status : status});
         return res.status(200).json({ message: 'Friendship status updated', friendship });
+    }
+    else
+    {
+        return res.status(400).json({ message: 'Friendship not found' });
+    }
+}
+
+module.exports.cancelFriendship = async (req, res) => {
+    const {_id}  = req.query; //id of the user to be cancelled
+    const userId = req.user._id;
+    // Get friendship where participants is _id and userId
+    const friendship = await Friendship.findOne({participants : {$all : [userId, _id]}, status : 'pending'})
+    // delete the friendship
+    if(friendship)
+    {
+        await Friendship.findByIdAndDelete(friendship._id);
+        return res.status(200).json({ message: 'Friendship cancelled' });
     }
     else
     {

@@ -70,9 +70,8 @@ module.exports.getConversations = async (req, res) => {
       }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
       .sort({ 'lastMessage.timestamp': -1 })
       .limit(1);
-
     // If fetched a conversation
-    if(conversations)
+    if(conversations.length > 0)
     {
         // get the user information
         const _id = conversations[0].participants.find((participant)=> participant.userId != userId).userId;

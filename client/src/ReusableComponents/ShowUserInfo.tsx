@@ -23,7 +23,7 @@ const ShowUserInfo = (props : any) => {
 
   return (
     <Modal onRequestClose={()=>handleRemoveHover()} isOpen={true} overlayClassName="" style={modalStyle}>
-        <div className="flex flex-col w-[400px] items-center gap-2 ">
+        <div className="flex flex-col w-[400px] items-center gap-2 animate-slide-down transition-all duration-500 ease-out">
           <Userimage className='flex w-[100px] aspect-square object-cover rounded-full items-center justify-center bg-gray-200 ' firstname={userInfo.firstname} lastname={userInfo.lastname} size={50} width={100} height={100} image={userInfo.profileImage} />
           <h2 className="text-2xl font-bold tracking-tight">{userInfo.firstname} {userInfo.lastname}</h2>
           <p className="text-sm text-gray-500 mt-1">{userInfo.userBio}</p>
