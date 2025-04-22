@@ -258,7 +258,7 @@ const UserProfile = () => {
           <div className='flex flex-col gap-1 w-full'>
             <span className='text-[1.7rem] text-center font-medium text-gray-600'>{user?.firstname} {user?.lastname}</span>
             <div className='mx-auto flex gap-2'>
-              <input ref={bioRef} type='text' defaultValue={user?.userBio} onClick={()=>{handleBioClick()}} className='text-center text-gray-500 underline cursor-pointer hover:text-gray-400' />
+              <input ref={bioRef} type='text' defaultValue={user?.userBio || 'Add Bio'} onClick={()=>{{handleBioClick();if(bioRef.current?.value == 'Add Bio'){bioRef.current.value = ''}}}} className='text-center text-gray-500 underline cursor-pointer hover:text-gray-400' />
               {
                 showBioSave &&
                 <button onClick={handleBioSubmit} className='text-sm text-gray-600 hover:text-gray-500'>Save</button>
@@ -296,7 +296,11 @@ const UserProfile = () => {
               )
             }
             )}
-            <button onClick={()=>{setModalIsOpenV3(true); setHobbies(user?.hobbies || [])}} className="text-sm text-blue-600 underline hover:text-blue-800">Edit</button>
+            <button onClick={()=>{setModalIsOpenV3(true); setHobbies(user?.hobbies || [])}} className="text-sm text-blue-600 underline hover:text-blue-800">
+              {
+               (user?.hobbies ?? []).length > 0 ? 'Edit' : 'Add Hobbies'
+              }
+            </button> 
             </div>
           </div>
           <div className='flex justify-center items-center gap-2 w-full mt-7'>

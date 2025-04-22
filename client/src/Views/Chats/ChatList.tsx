@@ -8,7 +8,8 @@ interface conversationsProps{
     userId : string
     socket : any
     showChatWindow : boolean,
-    setShowChatWindow : (showChatWindow : boolean) => void
+    setShowChatWindow : (showChatWindow : boolean) => void,
+    getConversations : () => void
 }
 
 interface ProfileProps{
@@ -20,7 +21,7 @@ interface ProfileProps{
   borderRadius? : number
 }
 
-const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShowChatWindow }) => {
+const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShowChatWindow , getConversations}) => {
   const navigate = useNavigate();
   const {_id, option} = useParams()
 
@@ -35,16 +36,18 @@ const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShow
   )
   }
 
-  const handleSelectConversation = async (option : string, recipientId : string) => {
+  const handleSelectConversation = async (option : string, recipientId : string, conversationID : string, isRead : boolean) => {
     
     navigate(`/chats/${option}/${recipientId}`, { replace: true });
-
-    // try {
-    //   const result = await http.patch('readConversation', {option, _id: recipientId })
-    //   console.log(result.data)
-    // } catch (error) {
-    //   console.log(error)
-    // }
+    if(!isRead)
+    {
+      try {
+        const result = await http.patch('readConversation', {option, _id, conversationID })
+        getConversations()
+      } catch (error) {
+        console.log(error)
+      }
+    }
 
   };
 
@@ -67,11 +70,11 @@ const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShow
       <div className='flex flex-col gap-3'>
         {
           conversations.map((conversation : any, index : number)=>{
-
+            const isRead = conversation?.lastMessage?.messageId?.readBy.includes(userId)
+            const messageId = conversation?.lastMessage?.messageId?._id
             const recipient = conversation.participants.find((participant : any)=>{
               return participant.userId._id !== userId
             })
-
             // is today
             const isToday = new Date().toLocaleDateString('en-US', {
               year: 'numeric',
@@ -91,12 +94,12 @@ const ChatList : React.FC<conversationsProps> = ({conversations, userId, setShow
             
             const isSentByUser = conversation.lastMessage.messageId.senderId === userId
             return (
-              <div onClick={()=>{handleSelectConversation(option, recipient.userId._id);setShowChatWindow(true)}} key={index} className={`flex ${isSelected ? 'bg-gray-100 border-l-4 border-theme_normal' : 'bg-white'} py-3 px-2 rounded gap-2 cursor-pointer items-center`}>
+              <div onClick={()=>{handleSelectConversation(option, recipient.userId._id, conversation._id || '', isRead);setShowChatWindow(true)}} key={index} className={`flex ${isSelected ? 'bg-gray-100 border-l-4 border-theme_normal' : 'bg-white'} py-3 px-2 rounded gap-2 cursor-pointer items-center`}>
                 <div className=''>
                    <Userimage className='flex w-[50px] aspect-square object-cover justify-center items-center rounded-full bg-gray-100' firstname={recipient.userId.firstname} lastname={recipient.userId.lastname} size={25} width={40} height={40} image={recipient.userId.profileImage} />
                 </div>
                 <div className='flex flex-col w-full gap-1'>
-                  <p className='text-sm font-medium text-gray-800'>{recipient.userId.firstname} {recipient.userId.lastname}</p>
+                  <p className={`text-sm ${!isRead ? 'font-extrabold' : 'font-medium'} text-gray-800`}>{recipient.userId.firstname} {recipient.userId.lastname}</p>
                   <p className='text-xs text-gray-500'>{isSentByUser ? 'You: ' : ''} {conversation.lastMessage.messageId.content}</p>
                 </div>
                 {/* Timestap */}

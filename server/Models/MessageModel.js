@@ -10,7 +10,7 @@ const MessageSchema = new mongoose.Schema(
     createdAt: { type: Date, default: Date.now }, // Default to current date
     updatedAt: { type: Date, default: Date.now }, // Default to current date
     messageType: { type: String, enum: ['text', 'image', 'video', 'audio', 'file'], required: true }, // Message type
-    isRead: { type: Boolean, default: false } // Indicates if the message has been read
+    readBy: { type: Array, default: [] } // Indicates if the message has been read
   },
 );
 

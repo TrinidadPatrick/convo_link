@@ -13,7 +13,6 @@ const Header : React.FC<any> = () => {
     const logout = async () => {
         try {
             const result = await http.post('logout',{}, {withCredentials: true})
-            console.log(result.data)
             setTimeout(() => {
                 window.location.reload()
             }, 700);

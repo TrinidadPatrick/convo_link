@@ -101,14 +101,24 @@ const FriendLists = () => {
         </button>
 
       </div>
-      <div className=' w-full h-full gap-3  overflow-y-scroll grid xxs:grid-cols-2 semiBase:grid-cols-3 semiMd:grid-cols-4  lg:grid-cols-7 justify-items-center pt-1 '>
+      {
+        Friends?.length == 0 ?
+        <div className='flex flex-col  items-center justify-center gap-3 w-full h-full'>
+            <h1 className='text-3xl font-medium text-gray-600'>No friends yet</h1>
+            <button onClick={() => navigate('/findPeople')} className='flex text-sm w-[100px] bg-theme_normal items-center justify-center py-1.5 px-2 rounded gap-2 '>
+              <p className='text-white font-normal'>Find Friends</p>
+            </button>
+          </div>
+          :
+<div className=' w-full h-full gap-3  overflow-y-scroll grid xxs:grid-cols-2 semiBase:grid-cols-3 semiMd:grid-cols-4  lg:grid-cols-7 justify-items-center pt-1 '>
         {
           // People recommendations
           Friends?.map((people: People, index: number) => {
             const isOnline = onlineUsers?.some((user: any) => user.user_id == people?._id) || false
             return (
-              <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, isOnline)}} key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between cursor-pointer '>
+              <div  key={index} className='px-2 pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between cursor-pointer '>
                 {/* Profile image */}
+                <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, isOnline)}} className=' h-full cursor-pointer'>
                 <div className={`flex w-fit mx-auto rounded-full ${isOnline && 'border-[2px] border-green-500'} relative justify-center items-center`}>
                   {/* Online indicator */}
                   {
@@ -123,7 +133,7 @@ const FriendLists = () => {
                   <h1 className='text-[1.1rem] text-center font-medium text-gray-800 line-clamp-1'>{people.firstname} {people.lastname}</h1>
                   <p className={`text-[0.85rem] line-clamp-2 leading-3 text-ellipsis overflow-hidden ${people?.userBio ? "text-gray-500" : "text-gray-300"} text-center `}>{people.userBio || "No Bio"}</p>
                 </div>
-
+                </div>
                 {/* Add button */}
                 <div className='flex w-full justify-center'>
 
@@ -136,8 +146,11 @@ const FriendLists = () => {
               </div>
             )
           })
+          
         }
       </div>
+      }
+      
     </div>
   )
 }

@@ -9,6 +9,7 @@ import ConversationStore from '../../store/ConversationStore'
 import onlineUserStore from '../../store/OnlineUsersStore'
 import { useLocation } from 'react-router-dom'
 import EmojiPicker from 'emoji-picker-react';
+import ShowUserInfo from '../../ReusableComponents/ShowUserInfo'
 
 interface ConversationInfo {
     headId?: string | undefined,
@@ -69,6 +70,7 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
     const bottomRef = useRef<HTMLDivElement>(null);
     const [page, setPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [showProfile, setShowProfile] = useState<boolean>(false)
     const limit = 10;
 
     useImperativeHandle(ref, () => ({
@@ -290,11 +292,17 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
         };
     }, [socket, _id])
 
+    const handleRemoveHover = () => {
+        setShowProfile(false)
+    }
+
+
 
     return (
         <div className=' w-full h-full flex flex-col overflow-hidden'>
+            {showProfile && <ShowUserInfo user={{userInfo : conversation?.user, isOnline : onlineUsers?.some((user: any) => user.user_id == conversation?.user?._id) || false}} handleRemoveHover={handleRemoveHover} />}
             {/* Header */}
-            <section className='w-full flex justify-between shadow-sm p-2'>
+            <section className='w-full flex justify-between shadow-sm border-b p-2'>
                 {/* Profile Information */}
                 {
                     isLoading ?
@@ -332,13 +340,7 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
                             </div>
                             {/* Other options */}
                             <div className='flex gap-4 px-5'>
-                                {/* <button className='flex items-center justify-center   '>
-                        <span className="icon-[fluent--call-16-regular] text-2xl text-gray-400"></span>
-                    </button>
-                    <button onClick={()=> openVcWindow()} className='flex items-center justify-center  '>
-                        <span className="icon-[weui--video-call-outlined] text-2xl text-gray-400"></span>
-                    </button> */}
-                                <button className='flex items-center justify-center  '>
+                                <button onClick={()=> setShowProfile(true)} className='flex items-center justify-center  '>
                                     <span className="icon-[material-symbols-light--info-outline] text-2xl text-gray-400"></span>
                                 </button>
                             </div>
@@ -365,7 +367,7 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
                             <div className='w-full flex justify-center'>
                                 <button className='flex items-center justify-center' onClick={() => setPage((prev) => prev + 1)}>
                                     {/* ()=>setPage((prev)=> prev + 1) */}
-                                    <span className="icon-[fluent:arrow-down-16-filled] text-sm pt-1 text-gray-400">load more</span>
+                                    {/* <span className="icon-[fluent:arrow-down-16-filled] text-sm pt-1 text-gray-400">load more</span> */}
                                 </button>
                             </div>
                             {
@@ -378,7 +380,7 @@ const ChatWindow = forwardRef<ChatWindowRef, Props>((props, ref) => {
                                             {/* Profile information */}
                                             <div className='flex gap-2'>
                                                 <div className={` ${isSender ? 'hidden' : 'flex'} h-full pb-3 flex-col justify-end`}>
-                                                    <Userimage className='flex justify-center items-center rounded-full bg-gray-100' firstname={message?.senderId?.firstname} lastname={message?.senderId?.lastname} size={10} width={25} height={25} />
+                                                    <Userimage className='flex w-[20px] aspect-square justify-center items-center rounded-full bg-gray-100' firstname={message?.senderId?.firstname} lastname={message?.senderId?.lastname} size={10} width={25} height={25} image={message?.senderId?.profileImage} />
                                                 </div>
                                                 {/* Message */}
                                                 <div className={` flex flex-col gap-0 `}>

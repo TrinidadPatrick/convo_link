@@ -35,10 +35,10 @@ module.exports.getConversations = async (req, res) => {
             { participants: { $elemMatch: { userId: _id } } }
           ],
           isGroup: false
-        }).populate('lastMessage.messageId', 'content createdAt isRead senderId');  
+        }).populate('lastMessage.messageId', 'content createdAt readBy senderId');  
       
       // get the user information
-      const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
+      const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage userBio hobbies Address');
       if(!user)
       {
           return res.status(400).json({ message: "User not found"});
@@ -67,7 +67,7 @@ module.exports.getConversations = async (req, res) => {
         $and: [
           { participants: { $elemMatch: { userId: userId } } }
         ],
-      }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
+      }).populate('lastMessage.messageId', 'content createdAt readBy senderId')
       .sort({ 'lastMessage.timestamp': -1 })
       .limit(1);
     // If fetched a conversation
@@ -75,7 +75,7 @@ module.exports.getConversations = async (req, res) => {
     {
         // get the user information
         const _id = conversations[0].participants.find((participant)=> participant.userId != userId).userId;
-        const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage');
+        const user = await User.findOne({_id, isDeactivated : false, email_verified : true, 'account_status.status' : 'Active'}).select('_id firstname lastname profileImage userBio hobbies Address');
         const option = conversations[0].isGroup ? 'g' : 't';
         const conversationId = conversations[0]._id;
         // console.log(user)
@@ -99,6 +99,7 @@ module.exports.getConversations = async (req, res) => {
 // Handles the sending of messages
 module.exports.sendMessage = async (req,res) => {
   const data = req.body;
+  const userId = req.user._id;
   const {message, conversationInfo} = data;
 
 
@@ -110,7 +111,7 @@ module.exports.sendMessage = async (req,res) => {
     await conversation.save();
 
     // Create a new message
-    const newMessage = await Message.create({...message, conversationId : conversation._id});
+    const newMessage = await Message.create({...message, conversationId : conversation._id, readBy : [userId]});
     conversation.lastMessage.messageId = newMessage._id;
     conversation.lastMessage.timestamp = newMessage.createdAt;
     await conversation.save();
@@ -123,7 +124,7 @@ module.exports.sendMessage = async (req,res) => {
     // Update the last message
     const conversation = await Conversation.findByIdAndUpdate(conversationInfo._id, {lastMessage : message});
     // Create a new message
-    const newMessage = await Message.create({...message, conversationId : conversation._id});
+    const newMessage = await Message.create({...message, conversationId : conversation._id, readBy : [userId]});
     conversation.lastMessage.messageId = newMessage._id;
     conversation.lastMessage.timestamp = newMessage.createdAt;
     await conversation.save();
@@ -146,7 +147,7 @@ module.exports.getConversationList = async (req, res) => {
       { participants: { $elemMatch: { userId: userId } } },
     ],
     isGroup: false
-  }).populate('lastMessage.messageId', 'content createdAt isRead senderId')
+  }).populate('lastMessage.messageId', 'content createdAt readBy senderId')
   .populate('participants.userId', '_id firstname lastname profileImage')
   .sort({ 'lastMessage.timestamp': -1 })
   
@@ -165,6 +166,7 @@ module.exports.readConversation = async (req, res) => {
   const userId = req.user._id;
   const _id = req.body._id;
   const option = req.body.option;
+  const conversationID = req.body.conversationID;
   const isGroup = option == 'g';
 
   // If there is a valid parameters
@@ -173,20 +175,22 @@ module.exports.readConversation = async (req, res) => {
     const isUserFriend = await Friendship.countDocuments({
       participants: { $all: [userId, _id] },
       status: 'accepted'
-    })
+    }).limit(1)
     if(isUserFriend)
     {
-      const conversation = await Conversation.findOne({
-          $and: [
-            { participants: { $elemMatch: { userId: userId } } },
-            { participants: { $elemMatch: { userId: _id } } },
-            { isGroup: isGroup }
-          ],
-        }).select('_id')
       
-      if(conversation)
+      if(conversationID)
       {
-        const messages = await Message.find({ conversationId: conversation._id })
+        const messages = await Message.find({$and: [{conversationId : conversationID}, {readBy : {$ne : userId}}]}).sort({createdAt : 1})
+        if(messages.length > 0)
+        {
+            messages.forEach((message) => {
+            message.readBy.push(userId)
+            message.save()
+          })
+
+          return res.status(200).json({ message: 'Message read' });
+        }
       }
     }
     
