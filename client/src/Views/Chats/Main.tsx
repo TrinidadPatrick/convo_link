@@ -51,7 +51,7 @@ const Main = () => {
   }, [socket])
 
   return (
-    <div className='w-full h-[100svh] overflow-hidden bg-[#f9f9f9] flex gap-2 p-2'>
+    <div className='w-full h-[100svh] overflow-hidden bg-[#f9f9f9] flex gap-2 p-2 pt-20'>
       {
         conversations?.length == 0 ?
         <div className='w-full h-[100svh] overflow-hidden bg-[#f9f9f9] flex flex-col justify-center items-center gap-2 p-2'>

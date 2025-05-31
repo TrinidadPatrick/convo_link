@@ -26,11 +26,6 @@ interface i_FriendRequests {
   initiator: any
 }
 
-interface RecommendationProps {
-  getRecommendations: (searchValue: string) => Promise<void>;
-}
-
-
 const FriendRecommendations = () => {
   const { FriendRecommendation, setFriendRecommendation } = FriendRecommendationStore();
   const { FriendRequests, setFriendRequests } = FriendRequestStore();
@@ -38,7 +33,6 @@ const FriendRecommendations = () => {
   let hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const [searchValue, setSearchValue] = useState<string>('')
   const [option, setOption] = useState<string>('Recommendations')
-  const [showMobileSearch, setShowMobileSearch] = useState<boolean>(false)
 
   // Request friendship
   const handleAddFriendship = async (userId: string) => {
@@ -55,8 +49,7 @@ const FriendRecommendations = () => {
   const handleCancelFriendship = async (_id: string) => {
     try {
       const result = await http.delete('cancelFriendship?_id='+_id, { withCredentials: true })
-      if(result.status == 200)
-      {
+      if(result.status == 200) {
         getRecommendations_v2('')
       }
     } catch (error: any) {
@@ -92,7 +85,6 @@ const FriendRecommendations = () => {
   const getRecommendations_v2 = async (searchValue: string) => {
     try {
       const result = await http.get('getPeopleRecommendations_v2?searchValue=' + searchValue, { withCredentials: true })
-      console.log(result.data.peopleRecommendation)
       setFriendRecommendation(result.data.peopleRecommendation)
     } catch (error: any) {
       console.log(error)
@@ -112,8 +104,7 @@ const FriendRecommendations = () => {
   useEffect(() => {
     getRecommendations_v2('')
     getFriendRequests('')
-    return () => {
-    }
+    return () => {}
   }, [])
 
   const handleHover = (user: any, isOnline: boolean) => {
@@ -129,7 +120,7 @@ const FriendRecommendations = () => {
   };
 
   const handleRemoveHover = () => {
-      setHoveredUser(null)
+    setHoveredUser(null)
   }
 
   const handleHoverLeave = () => {
@@ -138,168 +129,255 @@ const FriendRecommendations = () => {
     }
   };
 
+  const handleSearch = () => {
+    if (option == 'friendRequests') {
+      getFriendRequests(searchValue)
+    } else {
+      getRecommendations_v2(searchValue)
+    }
+  }
+
+  const clearSearch = () => {
+    setSearchValue('')
+    getRecommendations_v2('')
+  }
+
   return (
-    <div className='flex flex-col gap-3 p-5 bg-[#f9f9f9] shadow w-full h-[100svh]'>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-green-50 pt-20">
       {hoveredUser && <ShowUserInfo user={hoveredUser} handleRemoveHover={handleRemoveHover} />}
-      <div className='w-full  relative flex justify-between items-center'>
-        <h1 className={`text-xl ${showMobileSearch ? ' opacity-0' : 'opacity-100'} transition-all font-medium text-gray-600`}>Explore new friends</h1>
-        <div className='flex gap-3 Base:hidden items-center'>
-          {
-            showMobileSearch ?
-              <button onClick={() => setShowMobileSearch(false)} className='p-1 border-gray-500 rounded-full border w-8 flex justify-center items-center h-8 bg-gray-100'>
-                <span className="icon-[iconoir--cancel] text-2xl font-bold text-gray-500"></span>
+      
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+            Explore New Friends
+          </h1>
+          <p className="text-gray-600">
+            Discover and connect with people who share your interests
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-2xl">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg 
+                className="h-5 w-5 text-gray-400" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch()
+                }
+              }}
+              placeholder="Type a name or interest..."
+              className="block w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl text-gray-900 
+                       placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                       transition-colors duration-200 bg-white"
+            />
+            {searchValue ? (
+              <button
+                onClick={clearSearch}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
               </button>
-              :
-              <button onClick={() => setShowMobileSearch(true)} className='p-1 border-gray-500 rounded-full border w-8 flex justify-center items-center h-8 bg-gray-100'>
-                <span className="icon-[icon-park-outline--search] text-gray-500 text-lg"></span>
+            ) : (
+              <button
+                onClick={handleSearch}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
               </button>
-          }
-
-
-        </div>
-        {/* Search field mobile */}
-        <div className={`${showMobileSearch ? 'w-[90%] sm:w-[250px] border border-gray-500' : 'w-0'} Base:hidden flex items-center overflow-hidden transition-all origin-right right-11 absolute  rounded-full bg-white h-8`}>
-          <input
-            onChange={(e: any) => setSearchValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key == 'Enter') {
-                if (option == 'friendRequests') {
-                  getFriendRequests(searchValue)
-                }
-                else {
-                  getRecommendations(searchValue)
-                }
-              }
-            }}
-            placeholder="Type a name"
-            className="px-3 text-sm text-gray-600"
-            name="search"
-            type="text"
-          />
-        </div>
-      </div>
-      <div className='h-0.5 rounded-full opacity-30 bg-theme_normal'></div>
-
-      <div className='flex gap-3'>
-        {/* Search field */}
-        <div className="relative hidden Base:flex w-full sm:w-fit border rounded bg-white">
-          <input
-          value={searchValue}
-            onKeyDown={(e) => { if (e.key == 'Enter') { searchValue != '' && getRecommendations(searchValue) }}}
-            onChange={(e: any) => setSearchValue(e.target.value)}
-            placeholder="Type a name"
-            className=" bg-white border-gray-300 px-2 py-2.5 rounded w-full sm:w-72 transition-all outline-none"
-            name="search"
-            type="text"
-          />
-            {
-              searchValue != '' ?
-              <button onClick={()=>{setSearchValue('');getRecommendations_v2('')}} className='h-full px-2 pt-0 bg-transparent flex justify-center items-center'>
-              <span className="icon-[line-md--remove] hover:text-gray-500 text-xl"></span>
-              </button>
-              :
-              <button onClick={() => {
-                if (option == 'friendRequests') {
-                  searchValue != '' && getFriendRequests(searchValue)
-                }
-                else {
-                  searchValue != '' && getRecommendations(searchValue)
-                }
-              }}>
-            <svg
-              className="size-6 absolute top-2.5 right-3 text-gray-500"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              ></path>
-            </svg>
-            </button>
-            }
-            
-            
+            )}
+          </div>
         </div>
 
-        <div className='flex gap-3 justify-center items-center'>
-          <button onClick={() => setOption('Recommendations')} className={`px-3 semiSm:px-5 text-sm Base:text-base py-1 border border-theme_normal rounded-full ${option == 'Recommendations' ? 'bg-theme_normal text-white' : 'text-gray-500'}`}>People recommedation</button>
-          <button onClick={() => setOption('friendRequests')} className={`px-3 semiSm:px-5 text-sm Base:text-base py-1 border border-theme_normal rounded-full ${option == 'friendRequests' ? 'bg-theme_normal text-white' : 'text-gray-500'}`}>Friend requests</button>
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-8">
+          <button 
+            onClick={() => setOption('Recommendations')}
+            className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
+              option === 'Recommendations' 
+                ? 'bg-green-500 text-white shadow-lg' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            People recommendation
+          </button>
+          <button 
+            onClick={() => setOption('friendRequests')}
+            className={`px-6 py-3 rounded-full font-medium transition-all duration-200 ${
+              option === 'friendRequests' 
+                ? 'bg-green-500 text-white shadow-lg' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Friend requests
+          </button>
         </div>
-      </div>
-      <div className=' w-full h-full gap-3  overflow-y-scroll grid xxs:grid-cols-2 semiBase:grid-cols-3 semiMd:grid-cols-4  lg:grid-cols-6 justify-items-center pt-1 '>
-        {
-          option == 'friendRequests' ?
-            // Pending requests
-            FriendRequests?.map((people: i_FriendRequests, index: number) => {
-              console.log(people)
-              return (
-                <div key={index} className='px-2 pt-5 cursor-pointer pb-2 border bg-white rounded-lg shadow w-full h-[260px] flex flex-col gap-3 overflow-hidden justify-between '>
-                  {/* Profile image */}
-                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people.initiator, false)}} className='flex w-full justify-center items-center'>
-                    <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 shadow-lg' firstname={people?.initiator.firstname} lastname={people?.initiator.lastname} size={30} width={80} height={80} />
-                  </div>
-                  {/* Name and bio */}
-                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people.initiator, false)}} className='flex flex-col justify-start h-full'>
-                    <h1 className='text-[1.1rem] text-center font-medium text-gray-800 line-clamp-1'>{people.initiator.firstname} {people.initiator.lastname}</h1>
-                    <p className={`text-[0.85rem] line-clamp-2 leading-3 text-ellipsis overflow-hidden ${people?.initiator.userBio ? "text-gray-500" : "text-gray-300"} text-center `}>{people.initiator.userBio || "No Bio"}</p>
-                  </div>
-                  {/* Add button */}
-                  <div className='flex w-full justify-center'>
-                    <div className='flex flex-col w-full gap-2'>
-                      <button onClick={() => handleRespondFriendship(people?._id, "accepted")} className='flex bg-theme_normal hover:bg-theme_semilight items-center justify-center py-1.5 px-2 rounded gap-2 '>
-                        <p className='text-white text-sm'>Accept</p>
-                      </button>
-                      <button onClick={() => handleRespondFriendship(people?._id, "rejected")} className='flex items-center justify-center py-1.5 px-7 rounded gap-2 '>
-                        <p className='text-theme_semidark font-medium text-sm'>Reject</p>
-                      </button>
+
+        {/* Results Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {option === 'friendRequests' ? (
+            // Friend Requests
+            FriendRequests?.length > 0 ? (
+              FriendRequests.map((people: i_FriendRequests, index: number) => (
+                <div 
+                  key={index} 
+                  className="group bg-white rounded-3xl p-4 shadow-lg border border-green-100 hover:shadow-2xl hover:border-green-200 transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden flex flex-col"
+                >
+                  {/* Profile Image */}
+                  <div 
+                    className="flex justify-center mb-4"
+                    onMouseEnter={() => handleHover(people.initiator, false)}
+                    onMouseLeave={handleHoverLeave}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <Userimage 
+                        className="w-full h-full object-cover flex justify-center items-center" 
+                        firstname={people?.initiator.firstname} 
+                        lastname={people?.initiator.lastname} 
+                        size={30} 
+                        width={80} 
+                        height={80} 
+                      />
                     </div>
-
-                  </div>
-                </div>
-              )
-            })
-            :
-            // People recommendations
-            FriendRecommendation?.map((people: People, index: number) => {
-              return (
-                <div key={index} className='px-2 cursor-pointer pt-5 pb-2 border bg-white rounded-lg shadow w-full h-[220px] flex flex-col gap-3 overflow-hidden justify-between '>
-                  {/* Profile image */}
-                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, false)}} className='flex w-full justify-center items-center'>
-                    <Userimage className='flex rounded-full items-center justify-center aspect-square bg-gray-200 shadow-lg' firstname={people?.firstname} lastname={people?.lastname} size={30} width={80} height={80} />
-                  </div>
-                  {/* Name and bio */}
-                  <div onMouseLeave={()=>handleHoverLeave()} onMouseEnter={()=>{handleHover(people, false)}} className='flex flex-col justify-start h-full'>
-                    <h1 className='text-[1.1rem] text-center font-medium text-gray-800 line-clamp-1'>{people.firstname} {people.lastname}</h1>
-                    <p className={`text-[0.85rem] line-clamp-2 leading-3 text-ellipsis overflow-hidden ${people?.userBio ? "text-gray-500" : "text-gray-300"} text-center `}>{people.userBio || "No Bio"}</p>
                   </div>
 
-                  {/* Add button */}
-                  <div className='flex w-full justify-center'>
-                    {
-                      // If the people id is in the friendships array and user is initiator meaning a request is already sent
-                      people?.hasSentRequest ?
-                        <button onClick={() => handleCancelFriendship(people?._id)}
-                          className='flex w-full text-sm items-center justify-center py-1.5  rounded gap-2 bg-theme_semilight hover:bg-theme_light bg-opacity-20 '
-                        >
-                          <p className='font-medium text-theme_normal'>Cancel</p>
-                        </button>
-                        :
-                        <div className='flex flex-col gap-1.5 w-full'>
-                          <button onClick={() => handleAddFriendship(people?._id)} className='flex text-sm w-full bg-theme_normal hover:bg-theme_semilight items-center justify-center py-1.5 px-2 rounded gap-2 '>
-                            <p className='text-white font-normal'>Request friendship</p>
-                          </button>
-                        </div>
-                    }
+                  {/* Name and Bio */}
+                  <div 
+                    className="text-center mb-6"
+                    onMouseEnter={() => handleHover(people.initiator, false)}
+                    onMouseLeave={handleHoverLeave}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {people.initiator.firstname} {people.initiator.lastname}
+                    </h3>
+                    <p className={`text-sm ${
+                      people?.initiator.userBio ? "text-gray-600" : "text-gray-400 italic"
+                    }`}>
+                      {people.initiator.userBio || "No bio"}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    <button 
+                      onClick={() => handleRespondFriendship(people?._id, "accepted")}
+                      className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium 
+                               hover:bg-green-600 hover:shadow-md transition-all duration-200"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={() => handleRespondFriendship(people?._id, "rejected")}
+                      className="w-full text-green-600 py-3 px-4 rounded-lg font-medium 
+                               hover:bg-green-50 transition-all duration-200"
+                    >
+                      Reject
+                    </button>
                   </div>
                 </div>
-              )
-            })
-        }
+              ))
+            ) : (
+              <div className="col-span-full text-center py-16">
+                <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg">No pending friend requests</p>
+              </div>
+            )
+          ) : (
+            // People Recommendations
+            FriendRecommendation?.length > 0 ? (
+              FriendRecommendation.map((people: People, index: number) => (
+                <div 
+                  key={index} 
+                  className="group bg-white rounded-3xl p-4 shadow-lg border border-green-100 hover:shadow-2xl hover:border-green-200 transition-all duration-300 transform hover:-translate-y-2 relative overflow-hidden flex flex-col"
+                >
+                  {/* Profile Image */}
+                  <div 
+                    className="flex justify-center mb-4"
+                    onMouseEnter={() => handleHover(people, false)}
+                    onMouseLeave={handleHoverLeave}
+                  >
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <Userimage 
+                        className="w-full h-full object-cover flex justify-center items-center" 
+                        firstname={people?.firstname} 
+                        lastname={people?.lastname} 
+                        size={30} 
+                        width={80} 
+                        height={80} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Name and Bio */}
+                  <div 
+                    className="text-center mb-6"
+                    onMouseEnter={() => handleHover(people, false)}
+                    onMouseLeave={handleHoverLeave}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {people.firstname} {people.lastname}
+                    </h3>
+                    <p className={`text-sm ${
+                      people?.userBio ? "text-gray-600" : "text-gray-400 italic"
+                    }`}>
+                      {people.userBio || "No bio"}
+                    </p>
+                  </div>
+
+                  {/* Action Button */}
+                  <div>
+                    {people?.hasSentRequest ? (
+                      <button 
+                        onClick={() => handleCancelFriendship(people?._id)}
+                        className="w-full bg-gray-100 text-gray-600 py-3 px-4 rounded-lg font-medium 
+                                 hover:bg-gray-200 transition-all duration-200"
+                      >
+                        Cancel
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleAddFriendship(people?._id)}
+                        className="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium 
+                                 hover:bg-green-600 hover:shadow-md transition-all duration-200"
+                      >
+                        Request friendship
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-16">
+                <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg">No recommendations available</p>
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   )

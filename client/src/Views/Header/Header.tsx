@@ -21,13 +21,15 @@ const Header : React.FC<any> = () => {
         }
     }
   return (
-    <main className=''>
+    <main className='fixed w-[100vw] z-[9999999999999999999]'>
     <header className='flex items-center justify-between py-3 px-3 sm:px-8 bg-white border-b border-gray-200 shadow-sm'>
         <div onClick={()=>navigate("/")} className='flex cursor-pointer items-center gap-3'>
             <img src={Logo} alt="logo" className='h-8' />
         </div>
         {/* User image */}
-        <div className='flex items-center gap-3'>
+        {
+            user && (
+                <div className='flex items-center gap-3'>
             <div className=' hidden semiSm:flex flex-col items-end'>
                 <p className='text-sm font-medium text-gray-600'>{user?.firstname} {user?.lastname}</p>
                 <p className={`text-xs font-medium ${user?.profile_status == 'Offline' ? 'text-gray-600' : 'text-theme_semidark'}`}>{user?.profile_status}</p>  
@@ -73,6 +75,8 @@ const Header : React.FC<any> = () => {
             </button>
            
         </div>
+            )
+        }
     </header>
     </main>
   )

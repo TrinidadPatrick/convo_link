@@ -65,10 +65,43 @@ const UserProfile = () => {
       bottom: 'auto',
       marginRight: '-50%',
       transform: 'translate(-50%, -50%)',
+      borderRadius: '24px',
+      padding: '0',
+      border: 'none',
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(20px)',
+      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
     },
     overlay: {
-      backgroundColor: 'rgba(0, 0, 0, 0.75)', // Change this to any color
+      backgroundColor: 'rgba(44, 95, 93, 0.8)',
+      backdropFilter: 'blur(5px)',
     }
+  };
+
+  const customSelectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      borderColor: state.isFocused ? '#4a7c7a' : '#e5e7eb',
+      boxShadow: state.isFocused ? '0 0 0 3px rgba(74, 124, 122, 0.1)' : 'none',
+      '&:hover': {
+        borderColor: '#4a7c7a',
+      },
+      borderRadius: '12px',
+      padding: '4px',
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#2c5f5d' : state.isFocused ? '#f0fdfb' : 'white',
+      color: state.isSelected ? 'white' : '#374151',
+      '&:hover': {
+        backgroundColor: state.isSelected ? '#2c5f5d' : '#f0fdfb',
+      },
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      borderRadius: '12px',
+      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+    }),
   };
 
   const getAddressOptions = async (code: string, url: string, key: string) => {
@@ -81,14 +114,9 @@ const UserProfile = () => {
   }
 
   useEffect(() => {
-    // Meaning only runs if there is no user or address options is empty
-    if(!user?.Address)
-    {
+    if(!user?.Address) {
       getAddressOptions('', 'https://psgc.gitlab.io/api/provinces/', 'province')
-    }
-    // Meaning only runs if there is a user and address options is not empty
-    else if(user.Address)
-    {
+    } else if(user.Address) {
       getAddressOptions('', 'https://psgc.gitlab.io/api/provinces/', 'province')
       getAddressOptions(
         '',
@@ -100,7 +128,6 @@ const UserProfile = () => {
         `https://psgc.gitlab.io/api/cities-municipalities/${user.Address.city.code}/barangays/`,
         'barangay'
       )
-
       setAddress(user.Address)
     }
   }, [user, modalIsOpen])
@@ -112,8 +139,7 @@ const UserProfile = () => {
       if (value.name == '') {
         setError((prevError: any) => ({ ...prevError, [key]: true }))
         hasError = true;
-      }
-      else {
+      } else {
         setError((prevError: any) => ({ ...prevError, [key]: false }))
       }
     })
@@ -129,9 +155,7 @@ const UserProfile = () => {
         console.log(error)
       }
     }
-
     setLoading(false)
-
   }
 
   const ChangeEmailPassword = (input : string) => {
@@ -146,8 +170,7 @@ const UserProfile = () => {
   const updateProfileImage = async (image : string) => {
     try {
       const result = await http.patch('changeProfileImage', {image})
-      if(result.status == 200)
-      {
+      if(result.status == 200) {
         getUser()
       }
     } catch (error) {
@@ -174,20 +197,18 @@ const UserProfile = () => {
   }
 
   const handleBioClick = () => {
-    if(bioRef.current)
-    {
+    if(bioRef.current) {
       setShowBioSave(true)
-      bioRef.current.className = 'text-center text-gray-500 px-2 py-1 border rounded-sm w-fit mx-auto bg-gray-100'
+      bioRef.current.className = 'w-full text-center px-4 py-2 border-2 border-teal-200 rounded-xl bg-gray-50 focus:outline-none focus:border-teal-500 focus:bg-white transition-all duration-300'
     }
   }
 
   const handleBioSubmit = async () => {
-    if(bioRef.current)
-    {
+    if(bioRef.current) {
       try {
         const result = await http.patch('updateBio', {bio : bioRef.current.value})
         setShowBioSave(false)
-        bioRef.current.className = 'text-center underline text-gray-500 w-fit mx-auto cursor-pointer hover:text-gray-400'
+        bioRef.current.className = 'text-center text-white cursor-pointer hover:text-teal-600 transition-colors duration-300 bg-transparent border-none'
         getUser()
       } catch (error) {
         console.log(error)
@@ -199,12 +220,13 @@ const UserProfile = () => {
     const newHobbies = [...hobbies]
     newHobbies.splice(index, 1)
     setHobbies(newHobbies)
-
   }
 
   const handleAddHobby = () => {
-    setHobbies([...hobbies, hobby])
-    setHobby('')
+    if(hobby.trim()) {
+      setHobbies([...hobbies, hobby.trim()])
+      setHobby('')
+    }
   }
 
   const saveHobbies = async () => {
@@ -217,300 +239,359 @@ const UserProfile = () => {
     }
   }
 
-
-  // useEffect(() => {
-  //     // Check if socket is defined before attaching listeners
-  //     if (socket !== null) {
-  //       const handleTest = () => {
-  //         console.log('test');
-  //       };
-
-  //       socket.on('test', handleTest);
-
-  //       // Cleanup the event listener when the component unmounts
-  //       return () => {
-  //         socket.off('test', handleTest);
-  //       };
-  //     }
-  //   }, [socket]); // Dependency array includes socket
-  // Modal.setAppElement('#root');
-
   return (
-    <div className='w-full h-full flex flex-col'>
-      {/* Background 1 */}
-      <div style={{ backgroundImage: `url(${bg})` }} className='w-full h-[250px] min-h-[250px] bg-[20%_55%] brightness-50 bg-cover bg-no-repeat'>
-
-      </div>
-      {/* Background 2 */}
-      <div className='w-full relative flex-1 flex flex-col gap-3 p-2'>
-        <section className='w-full flex flex-col xs:w-[80%] md:w-[50%] h-[100%] -top-16 left-1/2 transform -translate-x-1/2 absolute bg-white rounded shadow-md'>
-          {/* Image Section */}
-          <div className='w-full h-[100px]  flex justify-center relative'>
-            <div className='absolute -top-14'>
-              <Userimage className='flex w-[130px] object-cover rounded-full items-center justify-center aspect-square bg-gray-200 shadow-lg' firstname={user?.firstname} lastname={user?.lastname} size={35} width={130} height={130} image={user?.profileImage} />
-              <button onClick={handleClick} className='absolute bottom-2 right-0 rounded-full  w-[30px] h-[30px] flex justify-center items-center bg-white border text-gray-700 text-sm'>
-              <span className="icon-[line-md--edit]"></span>
+    <div className='p-4  mt-16 lg:p-8'>
+      {/* Status Indicator */}
+      <div className='fixed top-6 right-6 w-3 h-3 bg-green-400 rounded-full border-2 border-white shadow-lg animate-pulse z-50'></div>
+      
+      {/* Main Profile Container */}
+      <div className='max-w-4xl mx-auto bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden'>
+        
+        {/* Hero Section */}
+        <div className='relative bg-gradient-to-r from-teal-400 to-cyan-500 px-8 py-16 text-center overflow-hidden'>
+          {/* Decorative Elements */}
+          <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent'></div>
+          <div className='absolute top-0 left-0 w-full h-full opacity-10'>
+            <div className='absolute top-10 left-10 w-20 h-20 border border-white/30 rounded-full'></div>
+            <div className='absolute bottom-10 right-10 w-16 h-16 border border-white/30 rounded-full'></div>
+            <div className='absolute top-1/2 left-1/3 w-12 h-12 border border-white/20 rounded-full'></div>
+          </div>
+          
+          {/* Profile Image */}
+          <div className='relative inline-block mb-3 group'>
+            <div className=' rounded-full border-4 border-white/90 shadow-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600 hover:scale-105 transition-transform duration-300'>
+              <Userimage 
+                className='w-24 aspect-square object-cover' 
+                firstname={user?.firstname} 
+                lastname={user?.lastname} 
+                size={35} 
+                width={100} 
+                height={100} 
+                image={user?.profileImage} 
+              />
+            </div>
+            <button 
+              onClick={handleClick} 
+              className='absolute bottom-2 right-0 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-teal-600 hover:bg-teal-50 hover:scale-110 transition-all duration-300 group-hover:shadow-xl'
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+            <input accept="image/*" onChange={handleUpload} ref={fileInputRef} className='hidden' type="file" />
+          </div>
+          
+          {/* Name and Bio */}
+          <h1 className='text-2xl font-bold text-white mb-2 relative z-10'>
+            {user?.firstname} {user?.lastname}
+          </h1>
+          <div className='mb-3 relative z-10'>
+            <input 
+              ref={bioRef} 
+              type='text' 
+              value={user?.userBio || 'Add your bio here...'} 
+              onClick={() => {
+                handleBioClick();
+                if(bioRef.current?.value === 'Add your bio here...') {
+                  bioRef.current.value = ''
+                }
+              }} 
+              className='text-center text-white cursor-pointer hover:text-white  duration-300 bg-transparent border-none' 
+            />
+            {showBioSave && (
+              <button 
+                onClick={handleBioSubmit} 
+                className='ml-3 px-4 py-1 mt-2 bg-white/20 text-white rounded-full text-sm hover:bg-white/30 transition-all duration-300'
+              >
+                Save
               </button>
-              <input accept="image/*" onChange={handleUpload} ref={fileInputRef} className='hidden' type="file" name="" id="" />
-            </div>
-          </div>
-          {/* Name and bio */}
-          <div className='flex flex-col gap-1 w-full'>
-            <span className='text-[1.7rem] text-center font-medium text-gray-600'>{user?.firstname} {user?.lastname}</span>
-            <div className='mx-auto flex gap-2'>
-              <input ref={bioRef} type='text' defaultValue={user?.userBio || 'Add Bio'} onClick={()=>{{handleBioClick();if(bioRef.current?.value == 'Add Bio'){bioRef.current.value = ''}}}} className='text-center text-gray-500 underline cursor-pointer hover:text-gray-400' />
-              {
-                showBioSave &&
-                <button onClick={handleBioSubmit} className='text-sm text-gray-600 hover:text-gray-500'>Save</button>
-              }
-            </div>
-          </div>
-
-          {/* Address */}
-          <div className='flex justify-center items-center gap-2 w-full mt-7'>
-            <span className="icon-[tdesign--location] text-gray-700 text-xl"></span>
-            {
-              user?.Address ?
-                <p onClick={() => setIsOpen(true)} className='text-gray-700 cursor-pointer'>{user?.Address.barangay.name} {user?.Address.city.name}, {user.Address.province.name}</p>
-                :
-                <p onClick={() => setIsOpen(true)} className='text-gray-400 underline cursor-pointer hover:text-gray-300'>Setup Address</p>
-            }
-
-          </div>
-          {/* Edit Hobbies */}
-          <div className='flex  flex-col justify-center items-center gap-2 w-full mt-4'>
-            <p className=' font-semibold text-gray-700 cursor-pointer '>Hobbies</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-            {user?.hobbies?.map((hobby, index) => {
-              return (
-                <div key={index}>
-                {
-                  index <= 3 &&
-                  <span className="bg-gray-100 text-sm px-3 py-1 rounded-full border">{hobby}</span>
-                }
-                {
-                  index == 4 &&
-                  <span className="bg-gray-100 text-sm px-3 py-1 rounded-full border">....</span>
-                }
-                </div>
-              )
-            }
             )}
-            <button onClick={()=>{setModalIsOpenV3(true); setHobbies(user?.hobbies || [])}} className="text-sm text-blue-600 underline hover:text-blue-800">
-              {
-               (user?.hobbies ?? []).length > 0 ? 'Edit' : 'Add Hobbies'
-              }
-            </button> 
-            </div>
           </div>
-          <div className='flex justify-center items-center gap-2 w-full mt-7'>
-            {/* Email Field */}
-            <div>
-              <span className='text-xs text-gray-500'>Email</span>
-              <div className='border h-[30px] w-[250px] overflow-hidden rounded-sm flex justify-between items-center'>
-                <p className='text-gray-500 py-1 px-2 text-sm cursor-pointer hover:text-gray-300 text-ellipsis'>{user?.email}</p>
-                <button onClick={()=>{ChangeEmailPassword('email')}} className='border m-0 h-full px-1 border-y-0 bg-gray-50 border-r-0 flex justify-center items-center'>
-                <span className="icon-[material-symbols--edit-outline] text-gray-500"></span>
-                </button>
-              </div>
-            </div>
-            {/* Password Field */}
-            <div>
-              <span className='text-xs text-gray-500'>Password</span>
-              <div className='border h-[30px] w-[250px] overflow-hidden rounded-sm flex justify-between items-center'>
-                <input disabled type='password' value='********' className='text-gray-500 py-1 px-2 text-sm cursor-pointer hover:text-gray-300 text-ellipsis'></input>
-                <button onClick={()=>{ChangeEmailPassword('password')}} className='border m-0 h-full px-1 border-y-0 bg-gray-50 border-r-0 flex justify-center items-center'>
-                <span className="icon-[material-symbols--edit-outline] text-gray-500"></span>
-                </button>
-              </div>
-            </div>
-            {/* <span className="icon-[mdi--email-outline] text-gray-700 text-xl"></span>
-            {
-                <p onClick={() => setIsOpen(true)} className='text-gray-500 cursor-pointer hover:text-gray-300'>{user?.email}</p>
-            } */}
+          
+          {/* Location */}
+          <div className='flex items-center justify-center text-white/80 text-lg relative z-10'>
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            {user?.Address ? (
+              <span 
+                onClick={() => setIsOpen(true)} 
+                className='cursor-pointer text-white hover:text-gray-200 transition-colors duration-300'
+              >
+                {user.Address.barangay.name} {user.Address.city.name}, {user.Address.province.name}
+              </span>
+            ) : (
+              <span 
+                onClick={() => setIsOpen(true)} 
+                className='cursor-pointer hover:text-white transition-colors duration-300 underline'
+              >
+                Add your location
+              </span>
+            )}
+          </div>
+        </div>
 
-          </div>
-        </section>
-      </div>
-      <EmailAndPasswordDB input={input} isOpen={modalIsOpenV2} setIsOpen={setModalIsOpenV2} />
-      <Modal isOpen={modalIsOpen} style={modalStyle}>
-        <div className='h-fit w-[500px] flex flex-col gap-3 overflow-hidden '>
-          <div className='w-full flex gap-2'>
-            <div className='h-[50px] bg-gray-700 rounded-sm w-[5px]'></div>
-            <div>
-              <h3 className=' text-xl font-medium'>Select your address</h3>
-              <p className='text-sm text-gray-500'>This will be displayed on your profile</p>
+        {/* Content Section */}
+        <div className='p-4 space-y-8'>
+          
+          {/* Hobbies Section */}
+          <div className='bg-gradient-to-r from-teal-50 to-green-50 rounded-2xl p-6 border border-teal-100'>
+            <div className='flex items-center justify-between mb-6'>
+              <h2 className='text-2xl font-semibold text-teal-800 flex items-center'>
+                <div className='w-1 h-8 bg-gradient-to-b from-teal-600 to-teal-400 rounded-full mr-3'></div>
+                Hobbies & Interests
+              </h2>
+              <button 
+                onClick={() => {setModalIsOpenV3(true); setHobbies(user?.hobbies || [])}}
+                className='px-4 py-2 border-2 border-teal-500 text-teal-600 rounded-full hover:bg-teal-500 hover:text-white transition-all duration-300 font-medium'
+              >
+                {(user?.hobbies ?? []).length > 0 ? 'Edit' : 'Add Hobbies'}
+              </button>
+            </div>
+            
+            <div className="flex flex-wrap ">
+              {user?.hobbies?.map((hobby, index) => (
+                <div key={index} className='m-3'>
+                  {index <= 3 && (
+                    <span className="bg-white/80 text-teal-700 px-4 py-2 rounded-full border border-teal-200 shadow-sm font-medium hover:shadow-md hover:scale-105 transition-all duration-300">
+                      {hobby}
+                    </span>
+                  )}
+                  {index === 4 && (
+                    <span className="bg-white/80 text-teal-700 px-4 py-2 rounded-full border border-teal-200 shadow-sm font-medium">
+                      +{user.hobbies.length - 4} more...
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          <hr className='my-1'></hr>
-          {/* Dropdowns */}
-          <div className='grid grid-cols-2 gap-5 justify-start items-start'>
+
+          {/* Account Information */}
+          <div className='bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200'>
+            <h2 className='text-2xl font-semibold text-gray-800 mb-6 flex items-center'>
+              <div className='w-1 h-8 bg-gradient-to-b from-gray-600 to-gray-400 rounded-full mr-3'></div>
+              Account Information
+            </h2>
+            
+            <div className='grid md:grid-cols-2 gap-6'>
+              {/* Email Field */}
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-600'>Email Address</label>
+                <div className='flex items-center bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300'>
+                  <input 
+                    type='text' 
+                    value={user?.email || ''} 
+                    disabled 
+                    className='flex-1 px-4 py-3 text-gray-700 bg-transparent'
+                  />
+                  <button 
+                    onClick={() => ChangeEmailPassword('email')}
+                    className='px-4 py-3 text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition-all duration-300'
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Password Field */}
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-gray-600'>Password</label>
+                <div className='flex items-center bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300'>
+                  <input 
+                    type='password' 
+                    value='••••••••••••' 
+                    disabled 
+                    className='flex-1 px-4 py-3 text-gray-700 bg-transparent'
+                  />
+                  <button 
+                    onClick={() => ChangeEmailPassword('password')}
+                    className='px-4 py-3 text-gray-500 hover:text-teal-600 hover:bg-teal-50 transition-all duration-300'
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Email/Password Modal */}
+      <EmailAndPasswordDB input={input} isOpen={modalIsOpenV2} setIsOpen={setModalIsOpenV2} />
+      
+      {/* Address Modal */}
+      <Modal isOpen={modalIsOpen} style={modalStyle}>
+        <div className='w-full max-w-2xl p-8 overflow-hidden'>
+          <div className='flex items-start gap-4 mb-6'>
+            <div className='w-1 h-16 bg-gradient-to-b from-teal-600 to-teal-400 rounded-full'></div>
+            <div>
+              <h3 className='text-2xl font-bold text-gray-800 mb-2'>Update Address</h3>
+              <p className='text-gray-600'>This information will be displayed on your profile</p>
+            </div>
+          </div>
+          
+          <div className='grid md:grid-cols-2 gap-6 mb-8'>
             {/* Province Dropdown */}
-            <div className="flex flex-col gap-1">
-              <p className='text-sm text-gray-500'>Province</p>
+            <div className="space-y-2">
+              <label className='text-sm font-medium text-gray-700'>Province</label>
               <Select
-                classNames={{
-                  menu: () => 'text-sm'
-                }}
-                // menuClassName='absolute z-10 max-h-[200px] overflow-y-auto bg-white shadow-md'
+                styles={customSelectStyles}
                 placeholder="Select Province"
                 options={addressOptions.province.map((prov) => ({
                   value: prov.code,
                   label: prov.name,
                 }))}
-                value={address.province && {value : address.province.code
-                  ,label : address.province.name}}
+                value={address.province.name ? {value: address.province.code, label: address.province.name} : null}
                 onChange={(e: any) => {
-                  getAddressOptions(
-                    e.value,
-                    `https://psgc.gitlab.io/api/provinces/${e.value}/cities-municipalities/`,
-                    'city'
-                  ),
+                  getAddressOptions(e.value, `https://psgc.gitlab.io/api/provinces/${e.value}/cities-municipalities/`, 'city');
                   setAddress({
-                      ...address,
-                      barangay: {name : '', code : ''},
-                      city: {name : '', code : ''},
-                      province: {name : e.label, code : e.value}
-                  }),
-                  setAddressOptions((prevAddress) => (
-                    {
-                      ...prevAddress,
-                      barangay: [],
-                    }
-                  ))
-                }
-
-                }
+                    ...address,
+                    barangay: {name: '', code: ''},
+                    city: {name: '', code: ''},
+                    province: {name: e.label, code: e.value}
+                  });
+                  setAddressOptions((prevAddress) => ({...prevAddress, barangay: []}));
+                }}
               />
-              <span>{error.province && <p className='text-red-500 text-xs'>Please select a province</p>}</span>
+              {error.province && <p className='text-red-500 text-sm'>Please select a province</p>}
             </div>
 
             {/* City Dropdown */}
-            <div className="flex flex-col gap-1">
-              <p className='text-sm text-gray-500'>City</p>
+            <div className="space-y-2">
+              <label className='text-sm font-medium text-gray-700'>City</label>
               <Select
-                classNames={{
-                  menu: () => 'text-sm'
-                }}
+                styles={customSelectStyles}
                 placeholder="Select City"
-                options={addressOptions.city.map((prov) => ({
-                  value: prov.code,
-                  label: prov.name,
+                options={addressOptions.city.map((city) => ({
+                  value: city.code,
+                  label: city.name,
                 }))}
-                value={address.city && {value : address.city.code
-                  ,label : address.city.name}}
+                value={address.city.name ? {value: address.city.code, label: address.city.name} : null}
                 onChange={(e: any) => {
-                  getAddressOptions(
-                    e.value,
-                    `https://psgc.gitlab.io/api/cities-municipalities/${e.value}/barangays/`,
-                    'barangay'
-                  ),
-                    setAddress({
-                      ...address,
-                      barangay: {name : '', code : ''},
-                      city: {name : e.label, code : e.value}
-                    }),
-                    setAddressOptions((prevAddress) => (
-                      {
-                        ...prevAddress,
-                        barangay: [],
-                      }
-                    ))
-                }
-                }
+                  getAddressOptions(e.value, `https://psgc.gitlab.io/api/cities-municipalities/${e.value}/barangays/`, 'barangay');
+                  setAddress({
+                    ...address,
+                    barangay: {name: '', code: ''},
+                    city: {name: e.label, code: e.value}
+                  });
+                }}
               />
-              <span>{error.city && <p className='text-red-500 text-xs'>Please select a city</p>}</span>
+              {error.city && <p className='text-red-500 text-sm'>Please select a city</p>}
             </div>
 
             {/* Barangay Dropdown */}
-            <div className="flex flex-col gap-1 col-span-2">
-              <p className='text-sm text-gray-500'>Barangay</p>
+            <div className="space-y-2 md:col-span-2">
+              <label className='text-sm font-medium text-gray-700'>Barangay</label>
               <Select
                 menuPlacement='top'
-                classNames={{
-                  menu: () => 'text-sm'
-                }}
+                styles={customSelectStyles}
                 placeholder="Select Barangay"
-                options={addressOptions.barangay.map((prov) => ({
-                  value: prov.code,
-                  label: prov.name,
+                options={addressOptions.barangay.map((barangay) => ({
+                  value: barangay.code,
+                  label: barangay.name,
                 }))}
-                value={address.barangay && {value : address.barangay.code
-                  ,label : address.barangay.name}}
+                value={address.barangay.name ? {value: address.barangay.code, label: address.barangay.name} : null}
                 onChange={(e: any) => {
                   setAddress({
                     ...address,
-                    barangay: {name : e.label, code : e.value}
-                  })
-                }
-                }
+                    barangay: {name: e.label, code: e.value}
+                  });
+                }}
               />
-              <span>{error.barangay && <p className='text-red-500 text-xs'>Please select a barangay</p>}</span>
+              {error.barangay && <p className='text-red-500 text-sm'>Please select a barangay</p>}
             </div>
-
           </div>
-          {/* Buttons */}
-          <div className='flex gap-3'>
-            <button onClick={() => handleSubmit()} className='flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded border px-2 py-1 text-gray-700 text-sm mt-4 '>
-            {
-              loading ?
-              <span className='text-gray-500 text-sm'>Loading...</span>
-              :
-              <span className='text-gray-500 text-sm'>Submit</span>
-            }
+          
+          <div className='flex gap-3 justify-end'>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className='px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300'
+            >
+              Cancel
             </button>
-            <button onClick={() => setIsOpen(false)} className='flex items-center justify-center bg-slate-50 rounded px-2 py-1 text-gray-700 text-sm mt-4 '>Cancel</button>
+            <button 
+              onClick={handleSubmit} 
+              disabled={loading}
+              className='px-6 py-2 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-xl hover:from-teal-700 hover:to-teal-600 transition-all duration-300 disabled:opacity-50'
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
-        </div>
-      </Modal>
-      {/* Hobbies Modal  */}
-      <Modal isOpen={modalIsOpenV3} style={modalStyle}>
-        <div className='h-fit w-[300px] flex flex-col gap-3 overflow-hidden '>
-          <div className='w-full flex gap-2'>
-            <div className='h-[50px] bg-gray-700 rounded-sm w-[5px]'></div>
-            <div>
-              <h3 className=' text-xl font-medium'>Edit Hobbies</h3>
-              <p className='text-sm text-gray-500'>Add or edit your hobbies</p>
-            </div>
-          </div>
-          {/* Hobbies Field */}
-          <div className='flex flex-col'> 
-            <div className='flex flex-wrap gap-2 mt-2'>
-            {hobbies.map((hobby, index) => {
-              return (
-                <div key={index} className='relative'>
-                  <button onClick={()=> handleRemoveHobby(index)} className='absolute -right-2 -top-2 z-20'>
-                    <span className="icon-[lets-icons--remove-fill] text-red-500 text-lg"></span>
-                  </button>
-                  <span className="bg-gray-100 text-sm px-3 py-1 rounded border">{hobby}</span>
-                </div>
-              )
-            }
-            )}
-            </div>
-            {/* input field */}
-            <div className='flex justify-center items-center gap-2 w-full mt-4'>
-              <input onKeyDown={(e) => {if(e.key == 'Enter'){handleAddHobby()}}} value={hobby} onChange={(e : any) => setHobby(e.target.value)} type='text' placeholder='Add hobby' className='w-full h-9 rounded border bg-gray-50 px-3 text-black font-normal text-[0.8rem] focus:outline-none focus:border-theme_semidark focus:ring-theme_semidark' />
-            </div>
-            {/* Submit button */}
-            <div className='flex justify-start items-center w-full mt-0'>
-              <button onClick={() => {saveHobbies()}} className='flex items-center justify-center bg-theme_normal rounded border px-2 py-1 text-gray-100 text-sm mt-4 '>
-              {
-                loading ?
-                <span className='text-gray-100 text-sm'>Loading...</span>
-                :
-                <span className='text-gray-100 text-sm'>Save</span>
-              }
-              </button>
-              <button onClick={() => setModalIsOpenV3(false)} className='flex items-center justify-center bg-slate-50 rounded px-2 py-1 text-gray-700 text-sm mt-4 '>Cancel</button>
-            </div>
-          </div>
-        
         </div>
       </Modal>
 
+      {/* Hobbies Modal */}
+      <Modal isOpen={modalIsOpenV3} style={modalStyle}>
+        <div className='w-full max-w-lg p-4'>
+          <div className='flex items-start gap-4 mb-6'>
+            <div className='w-1 h-16 bg-gradient-to-b from-teal-600 to-teal-400 rounded-full'></div>
+            <div>
+              <h3 className='text-2xl font-bold text-gray-800 mb-2'>Edit Hobbies</h3>
+              <p className='text-gray-600'>Add or remove your hobbies and interests</p>
+            </div>
+          </div>
+          
+          <div className='space-y-6'>
+            <div className='flex flex-wrap gap-3'>
+              {hobbies.map((hobby, index) => (
+                <div key={index} className='relative group'>
+                  <button 
+                    onClick={() => handleRemoveHobby(index)} 
+                    className='absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition-colors duration-300 opacity-0 group-hover:opacity-100'
+                  >
+                    ×
+                  </button>
+                  <span className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium border border-teal-200">
+                    {hobby}
+                  </span>
+                </div>
+              ))}
+            </div>
+            
+            <div className='flex gap-3'>
+              <input 
+                onKeyDown={(e) => {if(e.key === 'Enter') handleAddHobby()}} 
+                value={hobby} 
+                onChange={(e) => setHobby(e.target.value)} 
+                type='text' 
+                placeholder='Add a new hobby...' 
+                className='flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all duration-300' 
+              />
+              <button 
+                onClick={handleAddHobby}
+                disabled={!hobby.trim()}
+                className='px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                Add
+              </button>
+            </div>
+            
+            <div className='flex gap-3 justify-end pt-4'>
+              <button 
+                onClick={() => setModalIsOpenV3(false)} 
+                className='px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300'
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={saveHobbies} 
+                disabled={loading}
+                className='px-6 py-2 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-xl hover:from-teal-700 hover:to-teal-600 transition-all duration-300 disabled:opacity-50'
+              >
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
+
 Modal.setAppElement('#root')
 export default UserProfile

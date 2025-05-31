@@ -93,7 +93,7 @@ module.exports.getPeopleRecommendations_v2 = async (req, res) => {
             .limit(50);
              peopleRecommendation = result.map((person)=> {
                 return {
-                    person,
+                    ...person.toObject(),
                     hasSentRequest : sentRequestIds.includes(person._id.toString()),
                 }
             })
